@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+    <script src="cedilla.min.js"></script>
+	<title>Test</title>
+</head>
+<body>
+    
+    <p>WE!</p>
+    <div id="api_response"></div>
+	
+    <script>
+		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
+
+        ç.askApi('testCedilla').then((response) => {
+            ç.dom.q('#api_response').innerHTML = response;
+        }).catch((e)=>{
+            console.log(e);
+        })
+
+	</script>
+
+</body>
+</html>
