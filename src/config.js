@@ -1,6 +1,6 @@
 module.exports = {
-    apiEndpoint: 'api.php',
-    defaultDom: {
-        type: []
-    }
+	apiEndpoint: 'api.php',
+	defaultDom: {
+		type: []
+	}
 };

@@ -2,16 +2,22 @@
 
 require_once __DIR__ . '/cedilla.php';
 
-use ç\Api;
+use cedilla\Api;
 
 $api = new Api();
 
-$api->route('testCedilla', [
-	//'require' => [
-	//	'post' => [ 'username' => 'string', 'password' => 'string' ]
-	//]
+$api->route( 'testCedilla', [
+	'require' => [
+		'post' => [
+			'testP' => true
+		]
+	],
+	'check' => [
+		'login' => function(){ return isset($_SESSION['user']); }
+	]
 ], function($p, $response){
-	$response->ok($_SERVER['PHP_SELF'] . ' Test Done!');
+	//$response->done($p);
+	return $p;
 });
 
 $api->server();

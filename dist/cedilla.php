@@ -1,68 +1,71 @@
 <?php
 
-namespace ç;
+namespace cedilla;
+
+require_once __DIR__ . '/config.php';
 
 class Response{
 	
 	function __construct($tstart){
 		$this->tstart = $tstart;
+		$this->errors = [];
 	}
-	public function error($msg){
+
+	public function done($value=''){
 		header('Content-Type: application/json');
 		die(json_encode([
-			'error' => true,
-			'message' => $msg,
+			'errors' => $this->errors,
+			'response' => $value,
 			'time' => microtime(true) - $this->tstart
 		]));
 	}
 
-	public function ok($data = ''){
-		header('Content-Type: application/json');
-		die(json_encode([
-			'error' => false,
-			'response' => $data,
-			'time' => microtime(true) - $this->tstart
-		]));
+	public function addError($error){
+		array_push($this->errors, $error);
+	}
+
+	public function dieForError(){
+		if(count($this->errors) > 0){
+			$this->done();
+		}
 	}
 	public function redirect($location){
 		header('Location: ' . $location);
 		die('');
 	}
+	
 }
 
 class Api{
 	
+	const METHOD = [
+		'request' => 'R',
+		'post' => 'P',
+		'get' => 'G'
+	];
+
 	function __construct(){
 		$this->tstart = microtime(true);
 		$this->routes = [];
-		//$this->errorsRequire = [];
-		//$this->check = [];
-		//$this->args = [];
-		//$this->cb = [];
-		/*
-		
-		controllo e apro sessione, 
-		$_SESSION[
-			'ç_api_stat' = 
-		]
-
-		*/
+		$this->response = null;
 	}
 
-	private function parseV($obj, $_GLOB, &$errors){
+	private function parseV($action, $obj, $_GLOB){
 		$args = [];
 		foreach ($obj as $key => $v) {
 			if(!isset($_GLOB[$key])){
-				array_push($errors, $key . ' required');
+				$this->response->addError('R' . Api::METHOD[$action] . ':' . $key);
 				continue;
 			}
 			$vv = $_GLOB[$key];
-			if(is_array($v) && !in_array($vv, $v)){
-				array_push($errors, $key . ' invalid');
-				continue;
+			if(is_bool($v)) {
+				if(!$v){
+					$this->response->addError('N' . Api::METHOD[$action] . ':' . $key);
+				}
+			}elseif(is_array($v) && !in_array($vv, $v)){
+				$this->response->addError('I' . Api::METHOD[$action] . ':' . $key);
 			}elseif(is_callable($v) && !$v($vv)){
-				array_push($errors, $key . ' invalid');
-				continue;
+				$this->response->addError('I' . Api::METHOD[$action] . ':' . $key);
 			}elseif(is_string($v)){
 				switch ($v) {
 					case 'string':
@@ -90,30 +93,34 @@ class Api{
 	}
 
 	public function server(){
-
-		$r = new Response($this->tstart);
 		
-		if(!isset($_POST['_action'])) $r->error('action required');
-		$a = $_POST['_action'];
-		if(!isset($this->routes[$a])) $r->error('action invalid');
+		$this->response = new Response($this->tstart);
 
+		if(!isset(CEDILLA_ROUTE_METHOD['_cedilla_route'])){
+			$this->response->addError('A');
+			$this->response->done();
+		}
+		$a = CEDILLA_ROUTE_METHOD['_cedilla_route'];
+		if(!isset($this->routes[$a])){
+			$this->response->addError('B:' . $a);
+			$this->response->done();
+		}
 		$options = $this->routes[$a]['options'];
 		$cb = $this->routes[$a]['cb'];
 		$args = [];
 		
 		if(isset($options['require'])){
-			$errors = [];
 			$req = $options['require'];
 			if(isset($req['request'])){
-				$args = $this->parseV($req['request'], $_REQUEST, $errors);
+				$args = $this->parseV('request', $req['request'], $_REQUEST);
 			}else{
 				$g_args = [];
 				$p_args = [];
 				if(isset($req['get'])){
-					$g_args = $this->parseV($req['get'], $_GET, $errors);
+					$g_args = $this->parseV('get', $req['get'], $_GET);
 				}
 				if(isset($req['post'])){
-					$p_args = $this->parseV($req['post'], $_POST, $errors);
+					$p_args = $this->parseV('post', $req['post'], $_POST);
 				}
 				if(count($g_args) > 0 && count($p_args) > 0){
 					$args = [
@@ -126,24 +133,21 @@ class Api{
 					$args = $p_args;
 				}
 			}
-			if(count($errors) > 0){
-				$r->error( 'require:' . implode(",", $errors) );
-			}
 		}
 
+		$this->response->dieForError();
+		
 		if(isset($options['check'])){
-			$errors = [];
 			foreach ($options['check'] as $name => $cb) {
 				if(!$cb()){
-					array_push($errors, $name);
+					$this->response->addError('C:' . $name);
 				}
-			}
-			if(count($errors) > 0){
-				$r->error( 'check:' . implode(",", $errors) );
 			}
 		}
 		
-		$cb( $args, $r);
+		$this->response->dieForError();
+
+		$this->response->done( $cb($args, $this->response) );
 
 	}
 	
