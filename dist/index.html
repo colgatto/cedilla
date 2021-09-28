@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<script src="cedilla.min.js"></script>
+	<script src="cedilla.js"></script>
 	<title>Test</title>
 </head>
 <body>
@@ -14,7 +14,7 @@
 		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
 
 		ç.askApi('testCedilla', {
-			testP: 23
+			testPW: 23
 		}).then((response) => {
 			ç.dom.q('#api_response').innerHTML = JSON.stringify(response, null, 4);
 		}).catch((e)=>{

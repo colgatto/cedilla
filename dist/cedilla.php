@@ -38,34 +38,28 @@ class Response{
 
 class Api{
 	
-	const METHOD = [
-		'request' => 'R',
-		'post' => 'P',
-		'get' => 'G'
-	];
-
 	function __construct(){
 		$this->tstart = microtime(true);
 		$this->routes = [];
 		$this->response = null;
 	}
 
-	private function parseV($action, $obj, $_GLOB){
+	private function parseRequire($obj){
 		$args = [];
 		foreach ($obj as $key => $v) {
-			if(!isset($_GLOB[$key])){
-				$this->response->addError('R' . Api::METHOD[$action] . ':' . $key);
+			if(!isset(CEDILLA_PARAMS_METHOD[$key])){
+				$this->response->addError('R:' . $key);
 				continue;
 			}
-			$vv = $_GLOB[$key];
+			$vv = CEDILLA_PARAMS_METHOD[$key];
 			if(is_bool($v)) {
 				if(!$v){
-					$this->response->addError('N' . Api::METHOD[$action] . ':' . $key);
+					$this->response->addError('N:' . $key);
 				}
 			}elseif(is_array($v) && !in_array($vv, $v)){
-				$this->response->addError('I' . Api::METHOD[$action] . ':' . $key);
+				$this->response->addError('I:' . $key);
 			}elseif(is_callable($v) && !$v($vv)){
-				$this->response->addError('I' . Api::METHOD[$action] . ':' . $key);
+				$this->response->addError('I:' . $key);
 			}elseif(is_string($v)){
 				switch ($v) {
 					case 'string':
@@ -107,33 +101,8 @@ class Api{
 		}
 		$options = $this->routes[$a]['options'];
 		$cb = $this->routes[$a]['cb'];
-		$args = [];
-		
-		if(isset($options['require'])){
-			$req = $options['require'];
-			if(isset($req['request'])){
-				$args = $this->parseV('request', $req['request'], $_REQUEST);
-			}else{
-				$g_args = [];
-				$p_args = [];
-				if(isset($req['get'])){
-					$g_args = $this->parseV('get', $req['get'], $_GET);
-				}
-				if(isset($req['post'])){
-					$p_args = $this->parseV('post', $req['post'], $_POST);
-				}
-				if(count($g_args) > 0 && count($p_args) > 0){
-					$args = [
-						'get' => $g_args,
-						'post' => $p_args
-					];
-				}elseif(count($g_args) > 0){
-					$args = $g_args;
-				}elseif(count($p_args) > 0){
-					$args = $p_args;
-				}
-			}
-		}
+
+		$args = $this->parseRequire($options['require']);
 
 		$this->response->dieForError();
 		

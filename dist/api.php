@@ -8,10 +8,8 @@ $api = new Api();
 
 $api->route( 'testCedilla', [
 	'require' => [
-		'post' => [
-			'testP' => true
-		]
-	],
+		'testP' => true
+	], 
 	'check' => [
 		'login' => function(){ return isset($_SESSION['user']); }
 	]
