@@ -13,8 +13,12 @@
 	<script>
 		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
 
-		ç.askApi('testCedilla', {
-			testPW: 23
+		ç.askApi.errorCallback.route_invalid = (v) => { console.log(v + ' non va bene'); }
+
+		ç.askApi('testRegex123', {
+			valA: 23,
+			valB: '2',
+			action: 'sum'
 		}).then((response) => {
 			ç.dom.q('#api_response').innerHTML = JSON.stringify(response, null, 4);
 		}).catch((e)=>{

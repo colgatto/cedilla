@@ -6,9 +6,9 @@
 	"scripts": {
 		"bundle": "browserify src/core.js -o dist/cedilla.js",
 		"min": "browserify src/core.js | uglifyjs --compress --mangle > dist/cedilla.min.js",
-		"dist": "npm run bundle && npm run min",
+		"dist": "browserify src/core.js -o dist/cedilla.js && browserify src/core.js | uglifyjs --compress --mangle > dist/cedilla.min.js",
 		"server": "php -S 127.0.0.1:3000 -t dist",
-		"dev": "npm run bundle && npm run server"
+		"dev": "browserify src/core.js -o dist/cedilla.js && php -S 127.0.0.1:3000 -t dist"
 	},
 	"keywords": [],
 	"author": "Colgatto <colgatto@protonmail.com> (https://github.com/colgatto)",
