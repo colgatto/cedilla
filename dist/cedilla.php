@@ -34,6 +34,7 @@ class Response{
 			$this->done();
 		}
 	}
+	
 	public function redirect($location){
 		header('Location: ' . $location);
 		die('');
@@ -60,7 +61,6 @@ class Api{
 		];
 		return $this;
 	}
-
 
 	private function parseRequire($options){
 		if(!isset($options['require'])) return [];
@@ -146,6 +146,112 @@ class Api{
 
 	}
 	
+}
+
+class DB{
+
+	const DB_MYSQL = 'MYSQL';
+	const DB_OCI = 'OCI';
+	const DB_POSTGRESS = 'PG';
+
+	public function __construct($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
+		$this->type = $type;
+		$this->link = null;
+		switch ($this->type) {
+			case self::DB_MYSQL:
+				$this->link = self::buildMysql($db, $user, $password, $host, is_null($port) ? 3306 : $port, $dsn);
+				break;
+			case self::DB_OCI:
+				$this->link = self::buildOci($db, $user, $password, $host, is_null($port) ? 1521 : $port);
+				break;
+			case self::DB_POSTGRESS:
+				$this->link = self::buildPg($db, $user, $password, $host, is_null($port) ? 5432 : $port);
+				break;
+		}
+	}
+
+	public function query($query, $params = []){
+		switch ($this->type) {
+			case self::DB_MYSQL:
+				return self::pdo_query($this->link, $query, $params);
+			case self::DB_OCI:
+				return self::oci_query($this->link, $query, $params);
+		}
+	}
+
+	static public function buildMysql($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 3306, $dsn = 'charset=utf8'){
+		$link = null;
+		$link = new PDO( 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $db . ';' . $dsn, $user, $password, [
+			PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'"
+		]);
+		if(is_null($link)){
+			trigger_error(htmlentities('db connection exception', ENT_QUOTES), E_USER_ERROR);
+		}
+		return $link;
+	}
+
+	static public function mysql_query($link, $query, $params = []){
+		$s = $link->prepare($query);
+		foreach($binderObj as $key => $_unused) {
+			$s->bindParam($key, $binderObj[$key]);
+		}
+		if($s->execute()){
+			$r = $s->fetchAll(PDO::FETCH_ASSOC);
+			return $r;
+		} else {
+			trigger_error(htmlentities(implode(' - ', $s->errorInfo()), ENT_QUOTES), E_USER_ERROR);
+		}
+	}
+
+	static public function buildOci($service, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 1521){
+		$link = oci_connect($user, $password, '(DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=' . $service . '))(ADDRESS=(PROTOCOL=TCP)(HOST=' . $host . ')(PORT=' . $port . ')))');
+		if (!$link) {
+			$e = oci_error();
+			trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+		}
+		return $link;
+	}
+
+	static public function oci_query($link, $query, $params = []){
+		// Prepare the statement
+		$stid = oci_parse($link, $query);
+		if (!$stid) {
+			$e = oci_error($conn);
+			trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+		}
+		//bind params
+		foreach ($params as $k => $v) {
+			if(!is_array($v)){
+				$v = [
+					'type' => is_int($v) ? SQLT_INT : SQLT_CHR,
+					'val' => $v
+				];
+			}
+			oci_bind_by_name($stid, $k, $v['val'], -1, $v['type']);
+		}
+
+		// Perform the logic of the query
+		$r = oci_execute($stid);
+		if (!$r) {
+			$e = oci_error($stid);
+			trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+		}
+		$res = [];
+		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+			array_push($res, $row);
+		}
+		oci_free_statement($stid);
+		return $res;
+	}
+
+	static public function buildPg($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 5432){
+		return pg_connect("host=$host port=$port dbname=$db user=$user password=$password");
+		//TODO gestione errore
+	}
+
+	static public function pg_query($link, $query, $params = []){
+		//TODO
+	}
 }
 
 ?>

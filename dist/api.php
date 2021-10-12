@@ -8,7 +8,7 @@ $api = new Api();
 
 /////////////////
 
-$api->route( 'cleanTest', [], function($p, $response){
+$api->route( 'cleanTest', function($p, $response){
 	return 'done';
 });
 
@@ -92,8 +92,7 @@ $api->route( 'testCedilla', [
 
 /////////////////
 
-$api->route( '/testRegex([0-9]+)/', [
-], function($p, $matches){
+$api->route( '/testRegex([0-9]+)/', function($p, $matches){
 	return 'passato con ' . $matches[1];
 });
 
