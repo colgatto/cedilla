@@ -11,6 +11,9 @@
 	<code id="api_response"></code>
 	
 	<script>
+
+		ç.askApi.webhook = 'custom_api.php';
+
 		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
 
 		ç.askApi.errorCallback.route_invalid = (v) => { console.log(v + ' non va bene'); }

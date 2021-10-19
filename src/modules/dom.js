@@ -1,5 +1,3 @@
-const config = require('../config');
-
 const dom = (tagName, opt = {}) => {
 	let el = document.createElement(tagName);
 	/**
@@ -19,8 +17,6 @@ const dom = (tagName, opt = {}) => {
 		return el;
 	}
 
-	let options =  Object.assign( {}, opt, config.defaultDom );
-	
 	/**
 	 * click: function(){}
 	 */

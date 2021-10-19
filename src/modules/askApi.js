@@ -1,7 +1,5 @@
-const config = require('../config');
-
 const askApi = (route, data = {}) => new Promise( ( resolve, reject ) => {
-	return fetch(config.apiEndpoint + '?_cedilla_route=' + encodeURI(route), {
+	return fetch(askApi.webhook + '?_cedilla_route=' + encodeURI(route), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		mode: 'same-origin',
@@ -14,6 +12,8 @@ const askApi = (route, data = {}) => new Promise( ( resolve, reject ) => {
 		resolve(res.response);
 	} );
 });
+
+askApi.webhook = 'api.php';
 
 askApi.errorCallback = {
 	default: (err) => { console.error(err) },

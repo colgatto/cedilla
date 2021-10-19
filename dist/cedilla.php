@@ -108,14 +108,14 @@ class Api{
 		}
 	}
 
-	private function is_regex($pattern){
+	private function isRegex($pattern){
 		return @preg_match($pattern, null) !== false;
 	}
 
 	private function findPossibleRoute($value){
 		foreach ($this->routes as $finder => $route) {
 			if( is_array($finder) && in_array($value, $finder) ) return $route;
-			if( $this->is_regex($finder) && preg_match($finder, $value, $this->dataset) ) return $route;
+			if( $this->isRegex($finder) && preg_match($finder, $value, $this->dataset) ) return $route;
 			if( $finder == $value ) return $route;
 		}
 		$this->response->endError('B:' . $value);
@@ -159,13 +159,13 @@ class DB{
 		$this->link = null;
 		switch ($this->type) {
 			case self::DB_MYSQL:
-				$this->link = self::buildMysql($db, $user, $password, $host, is_null($port) ? 3306 : $port, $dsn);
+				$this->link = self::mysql_init($db, $user, $password, $host, is_null($port) ? 3306 : $port, $dsn);
 				break;
 			case self::DB_OCI:
-				$this->link = self::buildOci($db, $user, $password, $host, is_null($port) ? 1521 : $port);
+				$this->link = self::oci_init($db, $user, $password, $host, is_null($port) ? 1521 : $port);
 				break;
 			case self::DB_POSTGRESS:
-				$this->link = self::buildPg($db, $user, $password, $host, is_null($port) ? 5432 : $port);
+				$this->link = self::pg_init($db, $user, $password, $host, is_null($port) ? 5432 : $port);
 				break;
 		}
 	}
@@ -173,13 +173,15 @@ class DB{
 	public function query($query, $params = []){
 		switch ($this->type) {
 			case self::DB_MYSQL:
-				return self::pdo_query($this->link, $query, $params);
+				return self::mysql_query($this->link, $query, $params);
 			case self::DB_OCI:
 				return self::oci_query($this->link, $query, $params);
+			case self::DB_POSTGRESS:
+				return self::pg_query($this->link, $query, $params);
 		}
 	}
 
-	static public function buildMysql($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 3306, $dsn = 'charset=utf8'){
+	static public function mysql_init($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 3306, $dsn = 'charset=utf8'){
 		$link = null;
 		$link = new PDO( 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $db . ';' . $dsn, $user, $password, [
 			PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'"
@@ -203,7 +205,7 @@ class DB{
 		}
 	}
 
-	static public function buildOci($service, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 1521){
+	static public function oci_init($service, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 1521){
 		$link = oci_connect($user, $password, '(DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=' . $service . '))(ADDRESS=(PROTOCOL=TCP)(HOST=' . $host . ')(PORT=' . $port . ')))');
 		if (!$link) {
 			$e = oci_error();
@@ -244,7 +246,7 @@ class DB{
 		return $res;
 	}
 
-	static public function buildPg($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 5432){
+	static public function pg_init($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 5432){
 		return pg_connect("host=$host port=$port dbname=$db user=$user password=$password");
 		//TODO gestione errore
 	}

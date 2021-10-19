@@ -1,11 +1,4 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-module.exports = {
-	apiEndpoint: 'api.php',
-	defaultDom: {
-		type: []
-	}
-};
-},{}],2:[function(require,module,exports){
 window.cedilla = {
 	askApi: require('./modules/askApi'),
 	dom: require('./modules/dom'),
@@ -14,16 +7,14 @@ window.cedilla = {
 	cookies: require('./modules/cookies')
 };
 window.ç = window.cedilla;
-},{"./modules/arr":3,"./modules/askApi":4,"./modules/cookies":5,"./modules/dom":6,"./modules/str":7}],3:[function(require,module,exports){
+},{"./modules/arr":2,"./modules/askApi":3,"./modules/cookies":4,"./modules/dom":5,"./modules/str":6}],2:[function(require,module,exports){
 const arr = {};
 arr.pickRandom = (array) => array[Math.floor(Math.random() * array.length)];
 
 module.exports = arr;
-},{}],4:[function(require,module,exports){
-const config = require('../config');
-
+},{}],3:[function(require,module,exports){
 const askApi = (route, data = {}) => new Promise( ( resolve, reject ) => {
-	return fetch(config.apiEndpoint + '?_cedilla_route=' + encodeURI(route), {
+	return fetch(askApi.webhook + '?_cedilla_route=' + encodeURI(route), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		mode: 'same-origin',
@@ -36,6 +27,8 @@ const askApi = (route, data = {}) => new Promise( ( resolve, reject ) => {
 		resolve(res.response);
 	} );
 });
+
+askApi.webhook = 'api.php';
 
 askApi.errorCallback = {
 	default: (err) => { console.error(err) },
@@ -73,7 +66,7 @@ const errorCB = (res) => {
 };
 
 module.exports = askApi;
-},{"../config":1}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 
 const cookies = {};
 
@@ -104,9 +97,7 @@ cookies.deleteCookie = (c_name) => {
 };
 
 module.exports = cookies;
-},{}],6:[function(require,module,exports){
-const config = require('../config');
-
+},{}],5:[function(require,module,exports){
 const dom = (tagName, opt = {}) => {
 	let el = document.createElement(tagName);
 	/**
@@ -126,8 +117,6 @@ const dom = (tagName, opt = {}) => {
 		return el;
 	}
 
-	let options =  Object.assign( {}, opt, config.defaultDom );
-	
 	/**
 	 * click: function(){}
 	 */
@@ -239,7 +228,7 @@ dom.makeTable = (data) => {
 }
 
 module.exports = dom;
-},{"../config":1}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 
 const str = {};
 
@@ -273,4 +262,4 @@ str.htmlStrip = v => (new DOMParser()).parseFromString(v,'text/html').body.textC
 str.htmlEscape = v => v.replace(/&/g, "&amp;").replace(/'/g, '&#39;').replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
 module.exports = str;
-},{}]},{},[2]);
+},{}]},{},[1]);
