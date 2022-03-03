@@ -3,6 +3,7 @@
 require_once __DIR__ . '/cedilla.php';
 
 use cedilla\Api;
+use cedilla\DB;
 
 $api = new Api();
 
@@ -10,6 +11,16 @@ $api = new Api();
 
 $api->route( 'cleanTest', function($p, $response){
 	return 'done';
+});
+
+/////////////////
+
+$api->route( 'queryTest', function($p, $response){
+	$db = new DB('dadomaster');
+	$v = $db->query('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno',[
+		':fk_tipo_danno' => 15
+	]);
+	return $v;
 });
 
 /////////////////

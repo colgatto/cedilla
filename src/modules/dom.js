@@ -1,18 +1,20 @@
-const dom = (tagName, opt = {}) => {
+const str = require('./str');
+
+const dom = (tagName, options = {}) => {
 	let el = document.createElement(tagName);
 	/**
 	 * se passato content al posto di options
 	 * se opotion è String | Element | Array
 	*/
-	if(typeof opt == 'string'){
-		el.innerHTML = opt;
+	if(typeof options == 'string'){
+		el.innerHTML = options;
 		return el;
-	}else if(opt instanceof Element){
-		el.append(opt);
+	}else if(options instanceof Element){
+		el.append(options);
 		return el;
-	}else if( opt instanceof Array){
-		for (let i = 0; i < opt.length; i++) {
-			el.append(opt[i]);
+	}else if( options instanceof Array){
+		for (let i = 0; i < options.length; i++) {
+			el.append(options[i]);
 		}
 		return el;
 	}

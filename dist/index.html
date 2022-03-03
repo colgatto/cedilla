@@ -12,13 +12,14 @@
 	
 	<script>
 
-		ç.askApi.webhook = 'custom_api.php';
+		//ç.askApi.webhook = 'custom_api.php';
+
 
 		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
 
 		ç.askApi.errorCallback.route_invalid = (v) => { console.log(v + ' non va bene'); }
 
-		ç.askApi('testRegex123', {
+		ç.askApi('xfdgdghd', {
 			valA: 23,
 			valB: '2',
 			action: 'sum'
@@ -26,6 +27,14 @@
 			ç.dom.q('#api_response').innerHTML = JSON.stringify(response, null, 4);
 		}).catch((e)=>{
 			console.log(e);
+		});
+
+		ç.askApi('queryTest',{
+			testV: 23
+		}).then((res)=>{
+			console.log({res});
+			let table = ç.dom.makeTable(res);
+			ç.dom.q('body').append(table);
 		});
 
 	</script>

@@ -2,6 +2,8 @@
 
 namespace cedilla;
 
+use \PDO;
+
 require_once __DIR__ . '/config.php';
 
 class Response{
@@ -153,19 +155,20 @@ class DB{
 	const DB_MYSQL = 'MYSQL';
 	const DB_OCI = 'OCI';
 	const DB_POSTGRESS = 'PG';
+	const DB_MSSQL = 'SH1T';
 
 	public function __construct($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
 		$this->type = $type;
 		$this->link = null;
 		switch ($this->type) {
 			case self::DB_MYSQL:
-				$this->link = self::mysql_init($db, $user, $password, $host, is_null($port) ? 3306 : $port, $dsn);
+				$this->link = self::mysql_init($db, $user, $pass, $host, is_null($port) ? 3306 : $port, $dsn);
 				break;
 			case self::DB_OCI:
-				$this->link = self::oci_init($db, $user, $password, $host, is_null($port) ? 1521 : $port);
+				$this->link = self::oci_init($db, $user, $pass, $host, is_null($port) ? 1521 : $port);
 				break;
 			case self::DB_POSTGRESS:
-				$this->link = self::pg_init($db, $user, $password, $host, is_null($port) ? 5432 : $port);
+				$this->link = self::pg_init($db, $user, $pass, $host, is_null($port) ? 5432 : $port);
 				break;
 		}
 	}
@@ -183,7 +186,7 @@ class DB{
 
 	static public function mysql_init($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 3306, $dsn = 'charset=utf8'){
 		$link = null;
-		$link = new PDO( 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $db . ';' . $dsn, $user, $password, [
+		$link = new PDO( 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $db . ';' . $dsn, $user, $pass, [
 			PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'"
 		]);
 		if(is_null($link)){
@@ -194,8 +197,8 @@ class DB{
 
 	static public function mysql_query($link, $query, $params = []){
 		$s = $link->prepare($query);
-		foreach($binderObj as $key => $_unused) {
-			$s->bindParam($key, $binderObj[$key]);
+		foreach($params as $key => $v) {
+			$s->bindParam($key, $v);
 		}
 		if($s->execute()){
 			$r = $s->fetchAll(PDO::FETCH_ASSOC);
