@@ -24,14 +24,14 @@
 			action: 'sum'
 		}).then((response) => {
 			ç.dom.q('#api_response').innerHTML = JSON.stringify(response, null, 4);
-		}).catch((e)=>{
-			console.log(e);
 		});
 
-		ç.api('queryTest',{
-			testV: 23
-		}).then((res)=>{
-			console.log({res});
+		ç.api('queryTest').then((res)=>{
+			let table = ç.dom.makeTable(res);
+			ç.dom.q('body').append(table);
+		});
+
+		ç.api('customBD').then((res)=>{
 			let table = ç.dom.makeTable(res);
 			ç.dom.q('body').append(table);
 		});

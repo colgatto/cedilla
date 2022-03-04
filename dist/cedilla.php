@@ -47,12 +47,24 @@ class Response{
 
 class Api{
 	
-	function __construct(){
+	function __construct($options = []){
 		$this->tstart = microtime(true);
 		$this->routes = [];
 		$this->dataset = [];
 		$this->response = null;
-		$this->db = new DB();
+		if(isset($options['db'])){
+			$this->db = new DB(
+				$options['db']['database'],
+				isset($options['db']['user']) ? $options['db']['user'] : 'root',
+				isset($options['db']['pass']) ? $options['db']['pass'] : '',
+				isset($options['db']['host']) ? $options['db']['host'] : '127.0.0.1',
+				isset($options['db']['port']) ? $options['db']['port'] : null,
+				isset($options['db']['type']) ? $options['db']['type'] : DB::DB_MYSQL,
+				isset($options['db']['dsn']) ? $options['db']['dsn'] : 'charset=utf8'
+			);
+		}else{
+			$this->db = new DB();
+		}
 		$this->db->setApi($this);
 	}
 
@@ -162,26 +174,32 @@ class DB{
 
 	public function __construct($db = false, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
 		$this->api = false;
-		if($db) $this->init($db, $user, $pass, $host, $port, $type, $dsn);
+		$this->link = null;
+		$this->db = $db;
+		$this->user = $user;
+		$this->pass = $pass;
+		$this->host = $host;
+		$this->port = $port;
+		$this->type = $type;
+		$this->dsn = $dsn;
+		//if($db) $this->init($db, $user, $pass, $host, $port, $type, $dsn);
 	}
 
 	public function setApi($api){
 		$this->api = $api;
 	}
 
-	public function init($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
-		$this->type = $type;
-		$this->link = null;
+	public function connect(){
 		try{
 			switch ($this->type) {
 				case self::DB_MYSQL:
-					$this->link = self::mysql_init($db, $user, $pass, $host, is_null($port) ? 3306 : $port, $dsn);
+					$this->link = self::mysql_init($this->db, $this->user, $this->pass, $this->host, is_null($this->port) ? 3306 : $this->port, $this->dsn);
 					break;
 				case self::DB_OCI:
-					$this->link = self::oci_init($db, $user, $pass, $host, is_null($port) ? 1521 : $port);
+					$this->link = self::oci_init($this->db, $this->user, $this->pass, $this->host, is_null($this->port) ? 1521 : $this->port);
 					break;
 				case self::DB_POSTGRESS:
-					$this->link = self::pg_init($db, $user, $pass, $host, is_null($port) ? 5432 : $port);
+					$this->link = self::pg_init($this->db, $this->user, $this->pass, $this->host, is_null($this->port) ? 5432 : $this->port);
 					break;
 			}
 		}catch(Exception $e){
@@ -190,6 +208,9 @@ class DB{
 	}
 
 	public function query($query, $params = []){
+		if(is_null($this->link)){
+			$this->connect();
+		}
 		try{
 			switch ($this->type) {
 				case self::DB_MYSQL:

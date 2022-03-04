@@ -3,8 +3,13 @@
 require_once __DIR__ . '/cedilla.php';
 
 use cedilla\Api;
+use cedilla\DB;
 
-$api = new Api();
+$api = new Api([
+	'db' => [
+		'database' => 'dadomaster'
+	]
+]);
 
 /////////////////
 
@@ -15,12 +20,15 @@ $api->route( 'cleanTest', function($p, $response){
 /////////////////
 
 $api->route( 'queryTest', function($p, $response){
-	$this->db->init('dadomaster');
-
 	$v = $this->db->query('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
 		':fk_tipo_danno' => 15
 	]);
+	return $v;
+});
 
+$api->route( 'customBD', function($p, $response){
+	$customDB = new DB('portal');
+	$v = $customDB->query('SELECT * FROM booking_uffici');
 	return $v;
 });
 
