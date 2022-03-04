@@ -1,20 +1,15 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 window.cedilla = {
-	askApi: require('./modules/askApi'),
+	api: require('./modules/api'),
 	dom: require('./modules/dom'),
 	str: require('./modules/str'),
 	arr: require('./modules/arr'),
 	cookies: require('./modules/cookies')
 };
 window.ç = window.cedilla;
-},{"./modules/arr":2,"./modules/askApi":3,"./modules/cookies":4,"./modules/dom":5,"./modules/str":6}],2:[function(require,module,exports){
-const arr = {};
-arr.pickRandom = (array) => array[Math.floor(Math.random() * array.length)];
-
-module.exports = arr;
-},{}],3:[function(require,module,exports){
-const askApi = (route, data = {}) => new Promise( ( resolve, reject ) => {
-	return fetch(askApi.webhook + '?_cedilla_route=' + encodeURI(route), {
+},{"./modules/api":2,"./modules/arr":3,"./modules/cookies":4,"./modules/dom":5,"./modules/str":6}],2:[function(require,module,exports){
+const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
+	return fetch(api.webhook + '?_cedilla_route=' + encodeURI(route), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		mode: 'same-origin',
@@ -22,50 +17,70 @@ const askApi = (route, data = {}) => new Promise( ( resolve, reject ) => {
 		body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
 	}).then( res => res.json() ).then( res => {
 		if(res.errors.length > 0){
-			errorCB(res);
+			let triggErr = errorCB(res);
+			if(!triggErr) reject();
+		}else{
+			resolve(res.response);
 		}
-		resolve(res.response);
 	} );
 });
 
-askApi.webhook = 'api.php';
+api.webhook = 'api.php';
 
-askApi.errorCallback = {
+api.errorCallback = {
 	default: (err) => { console.error(err) },
-	route_undefined: () => { console.log('missing route') }, 
-	route_invalid: (v) => { console.log('invalid route: ' + v) }, 
-	check: (v) => { console.log('check \'' + v + '\' not passed') }, 
-	param_required: (v) => { console.log('required param ' + v) }, 
-	param_not_required: (v) => { console.log('param ' + v + ' not required') }, 
-	param_invalid: (v) => { console.log('invalid param ' + v) },
+	route_undefined: () => { console.error('missing route') }, 
+	route_invalid: (v) => { console.error('invalid route: ' + v) }, 
+	check: (v) => { console.error('check \'' + v + '\' not passed') }, 
+	param_required: (v) => { console.error('required param ' + v) }, 
+	param_not_required: (v) => { console.error('param ' + v + ' not required') }, 
+	param_invalid: (v) => { console.error('invalid param ' + v) },
+	internal_error: (v) => { console.error('internal server error: ' + v) },
 };
 
+
 const errorCB = (res) => {
-	const matcher = /^(A)|(?:(B|C|R|N|I):(.+))$/;
+	const matcher = /^(A)|(?:(B|C|R|N|I|E):(.+))$/;
 	for (let i = 0; i < res.errors.length; i++) {
 		const err = res.errors[i];
 		const match = matcher.exec(err);
 		if(match){
 			//console.log(match);
-			if(match[1] == 'A') return askApi.errorCallback.route_undefined();
+			if(match[1] == 'A') {
+				api.errorCallback.route_undefined();
+				return true;
+			}
 			switch(match[2]){
 				case 'B':
-					return askApi.errorCallback.route_invalid(match[3]);
+					api.errorCallback.route_invalid(match[3]);
+					return true;
 				case 'C':
-					return askApi.errorCallback.check(match[3]);
+					api.errorCallback.check(match[3]);
+					return true;
 				case 'R':
-					return askApi.errorCallback.param_required(match[3]);
+					api.errorCallback.param_required(match[3]);
+					return true;
 				case 'N':
-					return askApi.errorCallback.param_not_required(match[3]);
+					api.errorCallback.param_not_required(match[3]);
+					return true;
 				case 'I':
-					return askApi.errorCallback.param_invalid(match[3]);
+					api.errorCallback.param_invalid(match[3]);
+					return true;
+				case 'E':
+					api.errorCallback.internal_error(match[3]);
+					return true;
 			}
+			return false;//api.errorCallback.default(err);
 		}
-		return askApi.errorCallback.default(err);
 	}
 };
 
-module.exports = askApi;
+module.exports = api;
+},{}],3:[function(require,module,exports){
+const arr = {};
+arr.pickRandom = (array) => array[Math.floor(Math.random() * array.length)];
+
+module.exports = arr;
 },{}],4:[function(require,module,exports){
 
 const cookies = {};
@@ -218,7 +233,7 @@ dom.makeTable = (data) => {
 	for (let i = 0; i < rows.length; i++) {
 		let row = dom('tr');
 		for (let j = 0; j < rows[i].length; j++) {
-			console.log(rows[i][j]);
+			//console.log(rows[i][j]);
 			row.append(dom('td', rows[i][j]));
 		}
 		trows.push(row);
@@ -246,12 +261,10 @@ str.titled = (v, forceLower = false) => {
 	let newV = '';
 	for (let i = 0; i < v.length; i++) {
 		let c = v[i];
-		if(c == '_'){
-			c = ' ';
-		}
-		if( ( i == 0 || lastC == ' ' ) && c >= 'a' && c <= 'z' ) {
+		if(c == '_') c = ' ';
+		if( ( i == 0 || lastC.match(/^\s$/) ) && c >= 'a' && c <= 'z' ) {
 			c = c.toUpperCase();
-		}else if( forceLower && ( i != 0 && lastC != ' ' ) && c >= 'A' && c <= 'Z'){
+		}else if( forceLower && ( i != 0 && lastC.match(/^\S$/) ) && c >= 'A' && c <= 'Z'){
 			c = c.toLowerCase();
 		}
 		newV += c;

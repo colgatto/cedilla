@@ -13,12 +13,10 @@ str.titled = (v, forceLower = false) => {
 	let newV = '';
 	for (let i = 0; i < v.length; i++) {
 		let c = v[i];
-		if(c == '_'){
-			c = ' ';
-		}
-		if( ( i == 0 || lastC == ' ' ) && c >= 'a' && c <= 'z' ) {
+		if(c == '_') c = ' ';
+		if( ( i == 0 || lastC.match(/^\s$/) ) && c >= 'a' && c <= 'z' ) {
 			c = c.toUpperCase();
-		}else if( forceLower && ( i != 0 && lastC != ' ' ) && c >= 'A' && c <= 'Z'){
+		}else if( forceLower && ( i != 0 && lastC.match(/^\S$/) ) && c >= 'A' && c <= 'Z'){
 			c = c.toLowerCase();
 		}
 		newV += c;

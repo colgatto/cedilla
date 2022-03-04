@@ -41,8 +41,8 @@ Like `$` and `jQuery` cedilla has 2 global variable `ç` and `cedilla`, both of 
 
 ## TODO
 
-- parsare bene il body della askApi lato js
+- parsare bene il body della api lato js
 - migliorare la gestione errori
-	- fare un set di funzioni che puoi passare dentro il catch `).catch( ç.askApi.error404 )`
+	- fare un set di funzioni che puoi passare dentro il catch `).catch( ç.api.error404 )`
 	- OPPURE
-	- fare una funzione generatrice `).catch( ç.askApi.catch( { CONFIG DELL' ERRORE } ) )`
+	- fare una funzione generatrice `).catch( ç.api.catch( { CONFIG DELL' ERRORE } ) )`

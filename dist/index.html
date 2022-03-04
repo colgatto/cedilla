@@ -12,14 +12,13 @@
 	
 	<script>
 
-		//ç.askApi.webhook = 'custom_api.php';
-
+		//ç.api.webhook = 'custom_api.php';
 
 		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
 
-		ç.askApi.errorCallback.route_invalid = (v) => { console.log(v + ' non va bene'); }
+		ç.api.errorCallback.route_invalid = (v) => { console.log(v + ' non va bene'); }
 
-		ç.askApi('xfdgdghd', {
+		ç.api('xfdgdghd', {
 			valA: 23,
 			valB: '2',
 			action: 'sum'
@@ -29,7 +28,7 @@
 			console.log(e);
 		});
 
-		ç.askApi('queryTest',{
+		ç.api('queryTest',{
 			testV: 23
 		}).then((res)=>{
 			console.log({res});

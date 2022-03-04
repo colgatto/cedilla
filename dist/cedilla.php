@@ -3,6 +3,7 @@
 namespace cedilla;
 
 use \PDO;
+use \Exception;
 
 require_once __DIR__ . '/config.php';
 
@@ -51,15 +52,17 @@ class Api{
 		$this->routes = [];
 		$this->dataset = [];
 		$this->response = null;
+		$this->db = new DB();
+		$this->db->setApi($this);
 	}
 
 	public function route($name, $optionsOrCb, $cb = null){
 		$this->routes[$name] = is_null($cb) ? [
 			'options' => [],
-			'cb' => $optionsOrCb
+			'cb' => $optionsOrCb->bindTo($this)
 		] : [
 			'options' => $optionsOrCb,
-			'cb' => $cb
+			'cb' => $cb->bindTo($this)
 		];
 		return $this;
 	}
@@ -157,42 +160,55 @@ class DB{
 	const DB_POSTGRESS = 'PG';
 	const DB_MSSQL = 'SH1T';
 
-	public function __construct($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
+	public function __construct($db = false, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
+		$this->api = false;
+		if($db) $this->init($db, $user, $pass, $host, $port, $type, $dsn);
+	}
+
+	public function setApi($api){
+		$this->api = $api;
+	}
+
+	public function init($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = null, $type = self::DB_MYSQL, $dsn = 'charset=utf8'){
 		$this->type = $type;
 		$this->link = null;
-		switch ($this->type) {
-			case self::DB_MYSQL:
-				$this->link = self::mysql_init($db, $user, $pass, $host, is_null($port) ? 3306 : $port, $dsn);
-				break;
-			case self::DB_OCI:
-				$this->link = self::oci_init($db, $user, $pass, $host, is_null($port) ? 1521 : $port);
-				break;
-			case self::DB_POSTGRESS:
-				$this->link = self::pg_init($db, $user, $pass, $host, is_null($port) ? 5432 : $port);
-				break;
+		try{
+			switch ($this->type) {
+				case self::DB_MYSQL:
+					$this->link = self::mysql_init($db, $user, $pass, $host, is_null($port) ? 3306 : $port, $dsn);
+					break;
+				case self::DB_OCI:
+					$this->link = self::oci_init($db, $user, $pass, $host, is_null($port) ? 1521 : $port);
+					break;
+				case self::DB_POSTGRESS:
+					$this->link = self::pg_init($db, $user, $pass, $host, is_null($port) ? 5432 : $port);
+					break;
+			}
+		}catch(Exception $e){
+			$this->api->response->endError('E:' . trim($e->getMessage()));
 		}
 	}
 
 	public function query($query, $params = []){
-		switch ($this->type) {
-			case self::DB_MYSQL:
-				return self::mysql_query($this->link, $query, $params);
-			case self::DB_OCI:
-				return self::oci_query($this->link, $query, $params);
-			case self::DB_POSTGRESS:
-				return self::pg_query($this->link, $query, $params);
+		try{
+			switch ($this->type) {
+				case self::DB_MYSQL:
+					return self::mysql_query($this->link, $query, $params);
+				case self::DB_OCI:
+					return self::oci_query($this->link, $query, $params);
+				case self::DB_POSTGRESS:
+					return self::pg_query($this->link, $query, $params);
+			}
+		}catch(Exception $e){
+			$this->api->response->endError('E:' . trim($e->getMessage()));
 		}
 	}
 
 	static public function mysql_init($db, $user = 'root', $pass = '', $host = '127.0.0.1', $port = 3306, $dsn = 'charset=utf8'){
-		$link = null;
-		$link = new PDO( 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $db . ';' . $dsn, $user, $pass, [
-			PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'"
+		return new PDO( 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $db . ';' . $dsn, $user, $pass, [
+			PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'",
+			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 		]);
-		if(is_null($link)){
-			trigger_error(htmlentities('db connection exception', ENT_QUOTES), E_USER_ERROR);
-		}
-		return $link;
 	}
 
 	static public function mysql_query($link, $query, $params = []){

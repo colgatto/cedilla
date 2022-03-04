@@ -118,7 +118,7 @@ dom.makeTable = (data) => {
 	for (let i = 0; i < rows.length; i++) {
 		let row = dom('tr');
 		for (let j = 0; j < rows[i].length; j++) {
-			console.log(rows[i][j]);
+			//console.log(rows[i][j]);
 			row.append(dom('td', rows[i][j]));
 		}
 		trows.push(row);
