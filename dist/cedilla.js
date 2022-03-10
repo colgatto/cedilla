@@ -256,12 +256,12 @@ str.zerofill = (v) => {
 
 str.firstUp = (v, forceLower = false) => v.slice(0,1).toUpperCase() + ( forceLower ? v.slice(1).toLowerCase() : v.slice(1) );
 
-str.titled = (v, forceLower = false) => {
+str.titled = (v, forceLower = false, separators = ['_', ':']) => {
 	let lastC = '';
 	let newV = '';
 	for (let i = 0; i < v.length; i++) {
 		let c = v[i];
-		if(c == '_') c = ' ';
+		if(separators.includes(c)) c = ' ';
 		if( ( i == 0 || lastC.match(/^\s$/) ) && c >= 'a' && c <= 'z' ) {
 			c = c.toUpperCase();
 		}else if( forceLower && ( i != 0 && lastC.match(/^\S$/) ) && c >= 'A' && c <= 'Z'){
