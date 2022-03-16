@@ -94,7 +94,6 @@ valid `type` and default `port`
 
 ## TODO
 
-- parsare bene il body della api lato js
 - migliorare la gestione errori
 	- fare un set di funzioni che puoi passare dentro il catch `).catch( ç.api.error404 )`
 	- OPPURE

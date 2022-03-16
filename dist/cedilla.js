@@ -10,11 +10,15 @@ window.ç = window.cedilla;
 },{"./modules/api":2,"./modules/arr":3,"./modules/cookies":4,"./modules/dom":5,"./modules/str":6}],2:[function(require,module,exports){
 const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
 	return fetch(api.webhook + '?_cedilla_route=' + encodeURI(route), {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		mode: 'same-origin',
-		credentials: 'same-origin', 
-		body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
+		method: api._def_fetch_method,
+		headers: {
+			'Content-Type': 'application/json'
+			//'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		mode: api._def_fetch_mode,
+		credentials: api._def_fetch_credentials, 
+		body: JSON.stringify(data)
+		//body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
 	}).then( res => res.json() ).then( res => {
 		if(res.errors.length > 0){
 			let triggErr = errorCB(res);
@@ -26,6 +30,9 @@ const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
 });
 
 api.webhook = 'api.php';
+api._def_fetch_method = 'POST';
+api._def_fetch_mode = 'same-origin';
+api._def_fetch_credentials = 'same-origin';
 
 api.errorCallback = {
 	default: (err) => { console.error(err) },

@@ -1,10 +1,14 @@
 const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
-	return fetch(api.webhook + '?_cedilla_route=' + encodeURI(route), {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		mode: 'same-origin',
-		credentials: 'same-origin', 
-		body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
+	return fetch(api.default.webhook + '?_cedilla_route=' + encodeURI(route), {
+		method: api.default.fetch_method,
+		headers: {
+			'Content-Type': 'application/json'
+			//'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		mode: api.default.fetch_mode,
+		credentials: api.default.fetch_credentials, 
+		body: JSON.stringify(data)
+		//body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
 	}).then( res => res.json() ).then( res => {
 		if(res.errors.length > 0){
 			let triggErr = errorCB(res);
@@ -15,7 +19,12 @@ const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
 	} );
 });
 
-api.webhook = 'api.php';
+api.default = {
+	webhook: 'api.php',
+	fetch_method: 'POST',
+	fetch_mode: 'same-origin',
+	fetch_credentials: 'same-origin',
+};
 
 api.errorCallback = {
 	default: (err) => { console.error(err) },
