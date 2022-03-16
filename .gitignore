@@ -1,2 +1,4 @@
 .vscode
 *.7z
+docs/*
+phpdox*
