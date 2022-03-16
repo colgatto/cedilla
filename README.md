@@ -28,16 +28,18 @@ let cells = document.querySelectorAll('.example td'); //VANILLA JS
 - str
 - arr
 
+
+### `default` key
+
+Modules can have a property called `default` where is stored every default variable, it can be read and overwrited.
+
+A perfect example is when you must change the webook for the `api` module
+
 ```js
-
-ç.dom('p', ç.str.titled('funGE_TUTTo', true) ):
-
-
-ç.forAll('table.example td', (e) => {
-	console.log(e);
-});
-
+ç.api.default.webhook = 'custom/path/for/my_api.php';
 ```
+
+---
 
 # Backend PHP
 
@@ -85,11 +87,7 @@ valid `type` and default `port`
 
 
 
-
-
-
-
-
+---
 
 
 ## TODO

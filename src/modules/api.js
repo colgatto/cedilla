@@ -1,23 +1,30 @@
-const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
-	return fetch(api.default.webhook + '?_cedilla_route=' + encodeURI(route), {
-		method: api.default.fetch_method,
+
+const def = (options, key) => options[key] || api.default[key];
+
+const api = (route, data = {}, opt = {}) => {
+
+	const fetch_route = def(opt, 'webhook') + '?_cedilla_route=' + encodeURI(route);
+	const fetch_opt = {
+		method: def(opt, 'fetch_method'),
 		headers: {
 			'Content-Type': 'application/json'
-			//'Content-Type': 'application/x-www-form-urlencoded'
 		},
-		mode: api.default.fetch_mode,
-		credentials: api.default.fetch_credentials, 
+		mode: def(opt, 'fetch_mode'),
+		credentials: def(opt, 'fetch_credentials'), 
 		body: JSON.stringify(data)
-		//body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
-	}).then( res => res.json() ).then( res => {
-		if(res.errors.length > 0){
-			let triggErr = errorCB(res);
-			if(!triggErr) reject();
-		}else{
-			resolve(res.response);
-		}
-	} );
-});
+	};
+
+	return new Promise( ( resolve, reject ) => {
+		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
+			if(res.errors.length > 0){
+				let triggErr = errorCB(res);
+				if(!triggErr) reject();
+			}else{
+				resolve(res.response);
+			}
+		});
+	});
+};
 
 api.default = {
 	webhook: 'api.php',

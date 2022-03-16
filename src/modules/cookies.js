@@ -1,9 +1,16 @@
 
-const cookies = {};
+const cookies = {
+	default: {
+		expiration_time: 24 * 60 * 60 * 1000 // 1 DAY
+	}
+};
 
-cookies.setCookie = (c_name, c_val, ex_time = 1, timeInSecond = false) => {
+cookies.setCookie = (c_name, c_val, ex_time = null, timeInSecond = false) => {
 	let d = new Date();
-	d.setTime( d.getTime() + ( timeInSecond ? ex_time * 1000 : ex_time * 24 * 60 * 60 * 1000 ) );
+	d.setTime( d.getTime() + (
+		ex_time ? ( timeInSecond ? ex_time * 1000 : ex_time * 24 * 60 * 60 * 1000 )
+			: cookies.default.expiration_time
+	));
 	let expires = "expires="+d.toUTCString();
 	document.cookie = c_name + "=" + c_val + ";" + expires + ";path=/";
 };

@@ -8,31 +8,40 @@ window.cedilla = {
 };
 window.ç = window.cedilla;
 },{"./modules/api":2,"./modules/arr":3,"./modules/cookies":4,"./modules/dom":5,"./modules/str":6}],2:[function(require,module,exports){
-const api = (route, data = {}) => new Promise( ( resolve, reject ) => {
-	return fetch(api.webhook + '?_cedilla_route=' + encodeURI(route), {
-		method: api._def_fetch_method,
+
+const def = (options, key) => options[key] || api.default[key];
+
+const api = (route, data = {}, opt = {}) => {
+
+	const fetch_route = def(opt, 'webhook') + '?_cedilla_route=' + encodeURI(route);
+	const fetch_opt = {
+		method: def(opt, 'fetch_method'),
 		headers: {
 			'Content-Type': 'application/json'
-			//'Content-Type': 'application/x-www-form-urlencoded'
 		},
-		mode: api._def_fetch_mode,
-		credentials: api._def_fetch_credentials, 
+		mode: def(opt, 'fetch_mode'),
+		credentials: def(opt, 'fetch_credentials'), 
 		body: JSON.stringify(data)
-		//body: Object.keys( data ).map( k => k + '=' + data[k] ).join('&')
-	}).then( res => res.json() ).then( res => {
-		if(res.errors.length > 0){
-			let triggErr = errorCB(res);
-			if(!triggErr) reject();
-		}else{
-			resolve(res.response);
-		}
-	} );
-});
+	};
 
-api.webhook = 'api.php';
-api._def_fetch_method = 'POST';
-api._def_fetch_mode = 'same-origin';
-api._def_fetch_credentials = 'same-origin';
+	return new Promise( ( resolve, reject ) => {
+		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
+			if(res.errors.length > 0){
+				let triggErr = errorCB(res);
+				if(!triggErr) reject();
+			}else{
+				resolve(res.response);
+			}
+		});
+	});
+};
+
+api.default = {
+	webhook: 'api.php',
+	fetch_method: 'POST',
+	fetch_mode: 'same-origin',
+	fetch_credentials: 'same-origin',
+};
 
 api.errorCallback = {
 	default: (err) => { console.error(err) },
@@ -90,11 +99,18 @@ arr.pickRandom = (array) => array[Math.floor(Math.random() * array.length)];
 module.exports = arr;
 },{}],4:[function(require,module,exports){
 
-const cookies = {};
+const cookies = {
+	default: {
+		expiration_time: 24 * 60 * 60 * 1000 // 1 DAY
+	}
+};
 
-cookies.setCookie = (c_name, c_val, ex_time = 1, timeInSecond = false) => {
+cookies.setCookie = (c_name, c_val, ex_time = null, timeInSecond = false) => {
 	let d = new Date();
-	d.setTime( d.getTime() + ( timeInSecond ? ex_time * 1000 : ex_time * 24 * 60 * 60 * 1000 ) );
+	d.setTime( d.getTime() + (
+		ex_time ? ( timeInSecond ? ex_time * 1000 : ex_time * 24 * 60 * 60 * 1000 )
+			: cookies.default.expiration_time
+	));
 	let expires = "expires="+d.toUTCString();
 	document.cookie = c_name + "=" + c_val + ";" + expires + ";path=/";
 };
