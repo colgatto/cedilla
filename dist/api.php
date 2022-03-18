@@ -19,9 +19,11 @@ $api->route( 'cleanTest', function($p, $response){
 
 /////////////////
 
-$api->route( 'queryTest', function($p, $response){
+$api->route( 'queryTest', function($route){
+	$route->require('danno', 'int');
+},function($p){
 	$v = $this->db->query('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
-		':fk_tipo_danno' => 15
+		':fk_tipo_danno' => $p['danno']
 	]);
 	return $v;
 });
@@ -90,6 +92,26 @@ $api->route( 'login', [
 	return $response->done();
 });
 
+///////////////////
+/////////////////// POSSIBILE IDEA
+///////////////////
+/*
+$api->route('testCedilla', function($route){//passata come riferimento
+	$route->require('valA', 'int');
+	$route->require('valB', 'int');
+	$route->require('action', ['sum', 'sub', 'mul', 'div']);
+	$route->check('login', function(){ return isset($_SESSION['user']); });
+}, function($p, $response){});
+///////////////////
+	$route
+		->require([
+			'valA' => 'int',
+			'valB' => 'int',
+			'action' => ['sum', 'sub', 'mul', 'div']
+		])
+		->check('login', function(){ return isset($_SESSION['user']); });
+///////////////////
+*/
 
 $api->route( 'testCedilla', [
 	'require' => [

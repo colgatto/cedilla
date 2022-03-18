@@ -83,12 +83,18 @@ class Api{
 		if(!isset($options['require'])) return [];
 		$args = [];
 		$obj = $options['require'];
+		$v = file_get_contents('php://input');
+		try{
+			$post_data = json_decode($v, true);
+		}catch(Exception $e){
+			$post_data = [];
+		}
 		foreach ($obj as $key => $v) {
-			if(!isset(CEDILLA_PARAMS_METHOD[$key])){
+			if(!isset($post_data[$key])){
 				$this->response->addError('R:' . $key);
 				continue;
 			}
-			$vv = CEDILLA_PARAMS_METHOD[$key];
+			$vv = $post_data[$key];
 			if(is_bool($v)) {
 				if(!$v){
 					$this->response->addError('N:' . $key);
@@ -142,14 +148,21 @@ class Api{
 		
 		$this->response = new Response($this->tstart);
 
-		if(!isset(CEDILLA_ROUTE_METHOD['_cedilla_route'])){
+		if(!isset($_GET['_cedilla_route'])){
 			$this->response->endError('A');
 		}
 
-		$route = $this->findPossibleRoute( CEDILLA_ROUTE_METHOD['_cedilla_route'] );
+		$route = $this->findPossibleRoute( $_GET['_cedilla_route'] );
 
 		$options = $route['options'];
 		$cb = $route['cb'];
+
+		//SE OPTIONS è UNA FUNZIONA LA ESEGUO E CONTROLLO L'OGGETTO $ROUTE CHE GLI HO PASSATO SE NO FACCIO IL SOLITO
+		if(is_callable($options)){
+			$hook = new RouteHook();
+			$options($hook);
+			$options = $hook->options;
+		}
 
 		$args = $this->parseRequire($options);
 
@@ -163,6 +176,23 @@ class Api{
 
 	}
 	
+}
+
+class RouteHook{
+	public function __construct(){
+		$this->options = [
+			'require' => [],
+			'check' => []
+		];
+	}
+	public function require($key, $val){
+		$this->options['require'][$key] = $val;
+		return $this;
+	}
+	public function check($name, $cb){
+		$this->options['check'][$name] = $cb;
+		return $this;
+	}
 }
 
 class DB{

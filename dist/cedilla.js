@@ -17,6 +17,7 @@ const api = (route, data = {}, opt = {}) => {
 	const fetch_opt = {
 		method: def(opt, 'fetch_method'),
 		headers: {
+			'Accept': 'application/json',
 			'Content-Type': 'application/json'
 		},
 		mode: def(opt, 'fetch_mode'),
@@ -27,8 +28,8 @@ const api = (route, data = {}, opt = {}) => {
 	return new Promise( ( resolve, reject ) => {
 		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
 			if(res.errors.length > 0){
-				let triggErr = errorCB(res);
-				if(!triggErr) reject();
+				let triggErr = triggerGlobalError(res.errors);
+				if(!triggErr) reject(res.errors);
 			}else{
 				resolve(res.response);
 			}
@@ -44,49 +45,64 @@ api.default = {
 };
 
 api.errorCallback = {
-	default: (err) => { console.error(err) },
-	route_undefined: () => { console.error('missing route') }, 
-	route_invalid: (v) => { console.error('invalid route: ' + v) }, 
-	check: (v) => { console.error('check \'' + v + '\' not passed') }, 
-	param_required: (v) => { console.error('required param ' + v) }, 
-	param_not_required: (v) => { console.error('param ' + v + ' not required') }, 
-	param_invalid: (v) => { console.error('invalid param ' + v) },
-	internal_error: (v) => { console.error('internal server error: ' + v) },
+	default: (err) => {
+		console.error(err); //DEBUG
+		return false;
+	},
+	route_undefined: () => {
+		console.error('missing route'); //DEBUG
+		return false;
+	},
+	route_invalid: (v) => {
+		console.error('invalid route: ' + v); //DEBUG
+		return false;
+	},
+	check: (v) => {
+		console.error('check \'' + v + '\' not passed'); //DEBUG
+		return false;
+	},
+	param_required: (v) => {
+		console.error('required param ' + v); //DEBUG
+		return false;
+	},
+	param_not_required: (v) => {
+		console.error('param ' + v + ' not required'); //DEBUG
+		return false;
+	},
+	param_invalid: (v) => {
+		console.error('invalid param ' + v); //DEBUG
+		return false;
+	},
+	internal_error: (v) => {
+		console.error('internal server error: ' + v); //DEBUG
+		return false;
+	},
 };
 
-
-const errorCB = (res) => {
+const triggerGlobalError = errors => {
 	const matcher = /^(A)|(?:(B|C|R|N|I|E):(.+))$/;
-	for (let i = 0; i < res.errors.length; i++) {
-		const err = res.errors[i];
+	for (let i = 0; i < errors.length; i++) {
+		const err = errors[i];
 		const match = matcher.exec(err);
 		if(match){
-			//console.log(match);
 			if(match[1] == 'A') {
-				api.errorCallback.route_undefined();
-				return true;
+				return api.errorCallback.route_undefined();
 			}
 			switch(match[2]){
 				case 'B':
-					api.errorCallback.route_invalid(match[3]);
-					return true;
+					return api.errorCallback.route_invalid(match[3]);
 				case 'C':
-					api.errorCallback.check(match[3]);
-					return true;
+					return api.errorCallback.check(match[3]);
 				case 'R':
-					api.errorCallback.param_required(match[3]);
-					return true;
+					return api.errorCallback.param_required(match[3]);
 				case 'N':
-					api.errorCallback.param_not_required(match[3]);
-					return true;
+					return api.errorCallback.param_not_required(match[3]);
 				case 'I':
-					api.errorCallback.param_invalid(match[3]);
-					return true;
+					return api.errorCallback.param_invalid(match[3]);
 				case 'E':
-					api.errorCallback.internal_error(match[3]);
-					return true;
+					return api.errorCallback.internal_error(match[3]);
 			}
-			return false;//api.errorCallback.default(err);
+			return api.errorCallback.default(err);
 		}
 	}
 };
