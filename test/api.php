@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/cedilla.php';
+require_once __DIR__ . '/../dist/php/cedilla.php';
 
 use cedilla\Api;
 use cedilla\DB;
@@ -13,7 +13,7 @@ $api = new Api([
 
 /////////////////
 
-$api->route( 'cleanTest', function($p, $response){
+$api->route( 'cleanTest', function(){
 	return 'done';
 });
 
@@ -28,8 +28,8 @@ $api->route( 'queryTest', function($route){
 	return $v;
 });
 
-$api->route( 'customBD', function($p, $response){
-	$customDB = new DB('portal');
+$api->route( 'customBD', function(){
+	$customDB = $this->db->new('portal');
 	$v = $customDB->query('SELECT * FROM booking_uffici');
 	return $v;
 });
@@ -91,27 +91,6 @@ $api->route( 'login', [
 	}
 	return $response->done();
 });
-
-///////////////////
-/////////////////// POSSIBILE IDEA
-///////////////////
-/*
-$api->route('testCedilla', function($route){//passata come riferimento
-	$route->require('valA', 'int');
-	$route->require('valB', 'int');
-	$route->require('action', ['sum', 'sub', 'mul', 'div']);
-	$route->check('login', function(){ return isset($_SESSION['user']); });
-}, function($p, $response){});
-///////////////////
-	$route
-		->require([
-			'valA' => 'int',
-			'valB' => 'int',
-			'action' => ['sum', 'sub', 'mul', 'div']
-		])
-		->check('login', function(){ return isset($_SESSION['user']); });
-///////////////////
-*/
 
 $api->route( 'testCedilla', [
 	'require' => [

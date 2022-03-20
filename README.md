@@ -63,7 +63,7 @@ $api = new Api([
 The following table describes the properties of the options object.
 | Property | Description | Type | Default |
 | - | - | - | - |
-| db | Database infos | Object |  |
+| db | Database infos | Object | `{}` |
 
 The following table describes the properties of the `db` object.
 
