@@ -83,6 +83,7 @@ class Api{
 		if(!isset($options['require'])) return [];
 		$args = [];
 		$obj = $options['require'];
+		var_dump($_POST);
 		foreach ($obj as $key => $v) {
 			if(!isset(CEDILLA_PARAMS_METHOD[$key])){
 				$this->response->addError('R:' . $key);
@@ -151,6 +152,12 @@ class Api{
 		$options = $route['options'];
 		$cb = $route['cb'];
 
+		if(is_callable($options)){
+			$hook = new RouteHook();
+			$options($hook);
+			$options = $hook->options;
+		}
+
 		$args = $this->parseRequire($options);
 
 		$this->response->dieForError();
@@ -163,6 +170,23 @@ class Api{
 
 	}
 	
+}
+
+class RouteHook{
+	public function __construct(){
+		$this->options = [
+			'require' => [],
+			'check' => []
+		];
+	}
+	public function require($key, $val){
+		$this->options['require'][$key] = $val;
+		return $this;
+	}
+	public function check($name, $cb){
+		$this->options['check'][$name] = $cb;
+		return $this;
+	}
 }
 
 class DB{
