@@ -2,6 +2,7 @@
 
 namespace cedilla;
 
+require_once __DIR__ . '/Route.php';
 require_once __DIR__ . '/Error.php';
 
 class Api{
@@ -9,7 +10,6 @@ class Api{
 	function __construct($options = []){
 		$this->tstart = microtime(true);
 		$this->routes = [];
-		$this->dataset = [];
 		$this->response = null;
 		if(isset($options['db'])){
 			$this->db = new DB(
@@ -28,75 +28,28 @@ class Api{
 	}
 
 	public function route($name, $optionsOrCb, $cb = null){
-		$this->routes[$name] = is_null($cb) ? [
-			'options' => [],
-			'cb' => $optionsOrCb->bindTo($this)
-		] : [
-			'options' => $optionsOrCb,
-			'cb' => $cb->bindTo($this)
-		];
+		array_push($this->routes, new Route($this, $name, $optionsOrCb, $cb));
 		return $this;
 	}
 
-	private function parseRequire($options){
-		if(!isset($options['require'])) return [];
-		$args = [];
-		$obj = $options['require'];
-		$data = file_get_contents('php://input');
-		$data = empty($data) ? [] : json_decode($data, true);
-		foreach ($obj as $key => $v) {
-			if(!isset($data[$key])){
-				$this->response->error("Parameter '$key' is required", Error::PARAM_REQUIRED);
-				continue;
-			}
-			$vv = $data[$key];
-			if(is_bool($v)) {
-				if(!$v){
-					$this->response->error("Parameter '$key' is not required", Error::PARAM_NOT_REQUIRED);
-				}
-			}elseif(is_array($v) && !in_array($vv, $v)){
-				$this->response->error("Parameter '$key' is not valid", Error::PARAM_INVALID);
-			}elseif(is_callable($v) && !$v($vv)){
-				$this->response->error("Parameter '$key' is not valid", Error::PARAM_INVALID);
-			}elseif(is_string($v)){
-				switch ($v) {
-					case 'string':
-						$vv = strval($vv);
-						break;
-					case 'int':
-						$vv = intval($vv);
-						break;
-					case 'float':
-						$vv = floatval($vv);
-						break;
-				}
-			}
-			$args[$key] = $vv;
-		}
-		return $args;
-	}
-
-	private function parseCheck($options){
-		if(isset($options['check'])){
-			foreach ($options['check'] as $name => $cb) {
-				if(!$cb()){
-					$this->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS);
-				}
-			}
-		}
-	}
-
-	private function isRegex($pattern){
-		return @preg_match($pattern, null) !== false;
-	}
-
 	private function findPossibleRoute($value){
-		foreach ($this->routes as $finder => $route) {
-			if( is_array($finder) && in_array($value, $finder) ) return $route;
-			if( $this->isRegex($finder) && preg_match($finder, $value, $this->dataset) ) return $route;
-			if( $finder == $value ) return $route;
+		
+		$trigg = [];
+		
+		foreach ($this->routes as $route) {
+			if( $route->isTriggered($value) ) array_push($trigg, $route );
 		}
-		$this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID);
+		
+		if(count($trigg) == 0) $this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID);
+		
+		usort($trigg, function ($a, $b){
+			if($a->priority > $b->priority) return -1; 
+			if($a->priority < $b->priority) return 1; 
+			return 0;
+		});
+
+		return $trigg[0];
+
 	}
 
 	public function server(){
@@ -106,24 +59,12 @@ class Api{
 		if(!isset($_GET['_cedilla_route'])){
 			$this->response->error("Must define route", Error::ROUTE_UNDEFINED);
 		}
-
+		
 		$route = $this->findPossibleRoute( $_GET['_cedilla_route'] );
+		$route->validateRequire();
+		$route->validateCheck();
 
-		$options = $route['options'];
-		$cb = $route['cb'];
-
-		if(is_callable($options)){
-			$hook = new RouteHook();
-			$options($hook);
-			$options = $hook->options;
-		}
-
-		$args = $this->parseRequire($options);
-
-		$this->parseCheck($options);
-
-		$this->response->done( $cb($args, $this->dataset) );
-
+		$this->response->done( $route->exec() );
 	}
 }
 

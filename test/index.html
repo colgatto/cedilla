@@ -49,6 +49,14 @@
 			ç.dom.q('body').append(table);
 		});
 
+		ç.api('testRegex26').then((res)=>{
+			ç.dom.q('body').append(res);
+		});
+
+		ç.api('testPriority').then((res)=>{
+			ç.dom.q('body').append(' ['+res+']');
+		});
+
 	</script>
 
 </body>

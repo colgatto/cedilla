@@ -118,6 +118,20 @@ $api->route( '/testRegex([0-9]+)/', function($p, $matches){
 	return 'passato con ' . $matches[1];
 });
 
+/////////////////
+
+$api->route( 'testPriority',[
+	'priority' => 3
+], function($p, $matches){
+	return 'vince 1';
+});
+
+$api->route( 'testPriority',function($route){
+//	$route->priority(6);
+}, function($p, $matches){
+	return 'vince 2';
+});
+
 $api->server();
 
 ?>
