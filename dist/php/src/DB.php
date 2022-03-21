@@ -49,7 +49,7 @@ class DB{
 					break;
 			}
 		}catch(Exception $e){
-			$this->api->response->error('E:' . trim($e->getMessage()));
+			$this->api->response->error(trim($e->getMessage()));
 		}
 	}
 
@@ -67,7 +67,7 @@ class DB{
 					return self::pg_query($this->link, $query, $params);
 			}
 		}catch(Exception $e){
-			$this->api->response->error('E:' . trim($e->getMessage()));
+			$this->api->response->error(trim($e->getMessage()));
 		}
 	}
 
