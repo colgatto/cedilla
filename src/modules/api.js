@@ -16,9 +16,10 @@ const api = (route, data = {}, opt = {}) => {
 
 	return new Promise( ( resolve, reject ) => {
 		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
-			if(res.errors.length > 0){
-				let triggErr = triggerGlobalError(res.errors);
-				if(!triggErr) reject(res.errors);
+			if(res.error){
+				if( !triggerGlobalError(res.error) ){
+					reject(res.error.message, res.error.code);
+				}
 			}else{
 				resolve(res.response);
 			}
@@ -30,70 +31,62 @@ api.default = {
 	webhook: 'api.php',
 	fetch_method: 'POST',
 	fetch_mode: 'same-origin',
-	fetch_credentials: 'same-origin',
+	fetch_credentials: 'same-origin'
 };
 
 api.errorCallback = {
-	default: (err) => {
-		console.error(err); //DEBUG
+	default: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	route_undefined: () => {
-		console.error('missing route'); //DEBUG
+	route_undefined: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	route_invalid: (v) => {
-		console.error('invalid route: ' + v); //DEBUG
+	route_invalid: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	check: (v) => {
-		console.error('check \'' + v + '\' not passed'); //DEBUG
+	check: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	param_required: (v) => {
-		console.error('required param ' + v); //DEBUG
+	param_required: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	param_not_required: (v) => {
-		console.error('param ' + v + ' not required'); //DEBUG
+	param_not_required: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	param_invalid: (v) => {
-		console.error('invalid param ' + v); //DEBUG
+	param_invalid: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
-	internal_error: (v) => {
-		console.error('internal server error: ' + v); //DEBUG
+	internal_error: (message) => {
+		if(cedilla.DEBUG) console.error(message);
 		return false;
 	},
 };
 
-const triggerGlobalError = errors => {
-	const matcher = /^(A)|(?:(B|C|R|N|I|E):(.+))$/;
-	for (let i = 0; i < errors.length; i++) {
-		const err = errors[i];
-		const match = matcher.exec(err);
-		if(match){
-			if(match[1] == 'A') {
-				return api.errorCallback.route_undefined();
-			}
-			switch(match[2]){
-				case 'B':
-					return api.errorCallback.route_invalid(match[3]);
-				case 'C':
-					return api.errorCallback.check(match[3]);
-				case 'R':
-					return api.errorCallback.param_required(match[3]);
-				case 'N':
-					return api.errorCallback.param_not_required(match[3]);
-				case 'I':
-					return api.errorCallback.param_invalid(match[3]);
-				case 'E':
-					return api.errorCallback.internal_error(match[3]);
-			}
-			return api.errorCallback.default(err);
-		}
+const triggerGlobalError = err => {
+	switch(err.code){
+		case 'ROUTE_UNDEFINED':
+			return api.errorCallback.route_undefined(err.message, err.code);
+		case 'ROUTE_INVALID':
+			return api.errorCallback.route_invalid(err.message, err.code);
+		case 'CHECK_NOT_PASS':
+			return api.errorCallback.check(err.message, err.code);
+		case 'PARAM_REQUIRED':
+			return api.errorCallback.param_required(err.message, err.code);
+		case 'PARAM_NOT_REQUIRED':
+			return api.errorCallback.param_not_required(err.message, err.code);
+		case 'PARAM_INVALID':
+			return api.errorCallback.param_invalid(err.message, err.code);
+		case 'INTERNAL_ERROR':
+			return api.errorCallback.internal_error(err.message, err.code);
 	}
+	return api.errorCallback.default(err.message, err.code);
 };
 
 module.exports = api;

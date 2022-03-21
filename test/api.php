@@ -13,9 +13,10 @@ $api = new Api([
 
 /////////////////
 
-$api->route( 'cleanTest', function(){
-	return 'done';
-});
+//DA GESTIRE SE ROUTE è ARRAY O FUNZIONE
+//$api->route( [ 'cleanTest', 'test', 'main', 'root' ], function(){
+//	return 'done';
+//});
 
 /////////////////
 
@@ -85,11 +86,11 @@ $api->route( 'login', [
 		'username' => 'string',
 		'password' => 'string'
 	], 
-], function($p, $response){
+], function($p){
 	if($p['username'] == 'pippo' && $p['password'] == '12345' ){
 		$_SESSION['user'] = 'pippo';
 	}
-	return $response->done();
+	return $this->response->done();
 });
 
 $api->route( 'testCedilla', [

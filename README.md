@@ -28,8 +28,7 @@ let cells = document.querySelectorAll('.example td'); //VANILLA JS
 - str
 - arr
 
-
-### `default` key
+#### `default` key
 
 Modules can have a property called `default` where is stored every default variable, it can be read and overwrited.
 
@@ -39,6 +38,31 @@ A perfect example is when you must change the webook for the `api` module
 ç.api.default.webhook = 'custom/path/for/my_api.php';
 ```
 
+### Module `arr`
+
+### `pickRandom(array)`
+
+- array `<Array>`
+- Return: `<Object>` random item from array.
+
+```js
+let list = ['apple','mela','banana'];
+let fruit = ç.arr.pickRandom(list);
+```
+
+### Module `str`
+
+### `firstUp(text[, forceLowerCase])`
+
+- text `<string>`
+- forceLowerCase `<boolean>` force the rest of the string to lower case
+- Return: `<string>` same string with first char upper case
+```js
+const first = ç.str.firstUp('heLLO WOrld!');
+const second = ç.str.firstUp('heLLO WOrld!', true);
+console.log(first);//Print:  HeLLO WOrld!
+console.log(second);//Print:  Hello world!
+```
 ---
 
 # Backend PHP
