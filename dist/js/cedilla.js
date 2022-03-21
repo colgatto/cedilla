@@ -18,6 +18,7 @@ const api = (route, data = {}, opt = {}) => {
 	const fetch_opt = {
 		method: def(opt, 'fetch_method'),
 		headers: {
+			'Accept': 'application/json',
 			'Content-Type': 'application/json'
 		},
 		mode: def(opt, 'fetch_mode'),

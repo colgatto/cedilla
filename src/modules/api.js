@@ -5,8 +5,9 @@ const api = (route, data = {}, opt = {}) => {
 
 	const fetch_route = def(opt, 'webhook') + '?_cedilla_route=' + encodeURI(route);
 	const fetch_opt = {
-		method: def(opt, 'fetch_method'),
+		method: 'POST',
 		headers: {
+			'Accept': 'application/json',
 			'Content-Type': 'application/json'
 		},
 		mode: def(opt, 'fetch_mode'),
@@ -29,7 +30,6 @@ const api = (route, data = {}, opt = {}) => {
 
 api.default = {
 	webhook: 'api.php',
-	fetch_method: 'POST',
 	fetch_mode: 'same-origin',
 	fetch_credentials: 'same-origin'
 };
