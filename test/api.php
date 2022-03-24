@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../dist/php/cedilla.php';
 
 use cedilla\Api;
-use cedilla\DB;
 
 $api = new Api([
 	'db' => [
@@ -13,10 +12,10 @@ $api = new Api([
 
 /////////////////
 
-//DA GESTIRE SE ROUTE è ARRAY O FUNZIONE
-//$api->route( [ 'cleanTest', 'test', 'main', 'root' ], function(){
-//	return 'done';
-//});
+//DA GESTIRE SE ROUTE è FUNZIONE
+$api->route( [ 'cleanTest', 'test', 'main', 'root' ], function(){
+	return 'done';
+});
 
 /////////////////
 

@@ -120,3 +120,7 @@ valid `type` and default `port`
 	- fare un set di funzioni che puoi passare dentro il catch `).catch( ç.api.error404 )`
 	- OPPURE
 	- fare una funzione generatrice `).catch( ç.api.catch( { CONFIG DELL' ERRORE } ) )`
+
+- ogni modulo diventa un proxy
+	- privatizza le chiavi con _ davanti es: ç.redner._pool
+

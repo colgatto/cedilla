@@ -6,58 +6,8 @@
 	<title>Test</title>
 </head>
 <body>
-	
 	<p>WE!</p>
-	<code id="api_response"></code>
-	
-	<script>
-
-		ç.DEBUG = true;
-
-		ç.api.default.webhook = 'api.php';
-		
-		ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
-
-		//se definisco una errorCallback globale per un determinato tipo di errore allora verrà triggerata su ogni route
-		// !!! nel caso in cui la funzione torni true allora non verrà scatenato il catch della route
-		// è utile per filtrare errori generali su ogni route evitando millemila catch
-		
-		//ç.api.errorCallback.route_invalid = (v) => { console.log(v); return true; }
-
-		ç.api('sfhdgjnfdgnmgh', {
-			valA: 23,
-			valB: '2',
-			action: 'sum'
-		}).then((response) => {
-			ç.dom.q('#api_response').innerHTML = JSON.stringify(response, null, 4);
-		}).catch((e)=>{
-			//di default ogni errore del backend triggera il catch di api
-			console.log(e);
-		});
-
-		ç.api('queryTest', {
-			danno: 15
-		}).then((res)=>{
-			let table = ç.dom.makeTable(res);
-			ç.dom.q('body').append(table);
-		}).catch(e=>{
-			console.error(e);
-		});
-
-		ç.api('customBD').then((res)=>{
-			let table = ç.dom.makeTable(res);
-			ç.dom.q('body').append(table);
-		});
-
-		ç.api('testRegex26').then((res)=>{
-			ç.dom.q('body').append(res);
-		});
-
-		ç.api('testPriority').then((res)=>{
-			ç.dom.q('body').append(' ['+res+']');
-		});
-
-	</script>
-
+	<code id="api_response"></code>	
+	<script src="main.js"></script>
 </body>
 </html>
