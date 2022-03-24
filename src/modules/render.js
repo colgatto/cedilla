@@ -8,11 +8,12 @@ class Render {
 		this.templateName = templateName;
 		this.templatePath = render.default.templates_dir + '/' + templateName + '.hbs';
 		this.template = null;
+		this.f = null;
 		fetch(this.templatePath, {
 			method: 'POST',
 			mode: 'same-origin',
 			credentials: 'same-origin'
-		}).then( res => res.text() ).then((res) => this.template = res);
+		}).then( res => res.text() ).then((res) => this.f = Handlebars.compile(res));
 	}
 
 	with(data){
@@ -22,8 +23,7 @@ class Render {
 
 	on(selector, overwrite = false){
 		return new Promise( async (resolve) => {
-			while(this.template === null) await sleep(100);
-			this.f = Handlebars.compile(this.template);
+			while(this.f === null) await sleep(100);
 			const rendered = this.f(this.data);
 			document.querySelectorAll(selector).forEach( el => {
 				if(overwrite) el.innerHTML = rendered;
