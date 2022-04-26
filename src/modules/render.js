@@ -5,15 +5,32 @@ const sleep = async n => new Promise( r => setTimeout(r, n));
 class Render {
 	
 	constructor(templateName) {
+		
 		this.templateName = templateName;
-		this.templatePath = render.default.templates_dir + '/' + templateName + '.hbs';
 		this.template = null;
 		this.f = null;
-		fetch(this.templatePath, {
-			method: 'POST',
-			mode: 'same-origin',
-			credentials: 'same-origin'
-		}).then( res => res.text() ).then((res) => this.f = Handlebars.compile(res));
+		this.loading = new Promise( r => r());
+		
+		let tDom = document.getElementById(templateName);
+		
+		if(tDom){
+			this.templatePath = '#';
+			this.template = tDom.innerHTML;
+			this._compile();
+		}else{
+			this.templatePath = render.default.templates_dir + '/' + templateName + '.hbs';
+			this.loading = fetch(this.templatePath, {
+				mode: 'same-origin',
+				credentials: 'same-origin'
+			}).then( res => res.text() ).then((res) => {
+				this.template = res;
+				this._compile();
+			});
+		}
+	}
+
+	_compile(){
+		this.f = Handlebars.compile(this.template);
 	}
 
 	with(data){
@@ -23,7 +40,7 @@ class Render {
 
 	on(selector, overwrite = false){
 		return new Promise( async (resolve) => {
-			while(this.f === null) await sleep(100);
+			await this.loading;
 			const rendered = this.f(this.data);
 			document.querySelectorAll(selector).forEach( el => {
 				if(overwrite) el.innerHTML = rendered;

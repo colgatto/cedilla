@@ -6,7 +6,8 @@ use cedilla\Api;
 
 $api = new Api([
 	'db' => [
-		'database' => 'dadomaster'
+		'database' => 'dadomaster',
+		'password' => 'root'
 	]
 ]);
 
@@ -29,7 +30,7 @@ $api->route( 'queryTest', function($route){
 });
 
 $api->route( 'customBD', function(){
-	$customDB = $this->db->new('portal');
+	$customDB = $this->db->new('portal','root','root');
 	$v = $customDB->query('SELECT * FROM booking_uffici');
 	return $v;
 });

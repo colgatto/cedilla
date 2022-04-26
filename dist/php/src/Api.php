@@ -5,6 +5,25 @@ namespace cedilla;
 require_once __DIR__ . '/Route.php';
 require_once __DIR__ . '/Error.php';
 
+function getDef($in, $keys, $def){
+	if (!is_array($keys)) $keys = [$keys];
+	for ($i=0; $i < count($keys); $i++) { 
+		$k = explode('.', $keys[$i]);
+		$inC = $in;
+		$break = false;
+		for ($j=0; $j < count($k); $j++) { 
+			$kk = $k[$j];
+			if(!isset($inC[$kk])){
+				$break = true;
+				break;
+			}
+			$inC = $inC[$kk];
+		}
+		if(!$break) return $inC;
+	}
+	return $def;
+}
+
 class Api{
 	
 	function __construct($options = []){
@@ -14,12 +33,12 @@ class Api{
 		if(isset($options['db'])){
 			$this->db = new DB(
 				$options['db']['database'],
-				isset($options['db']['user']) ? $options['db']['user'] : 'root',
-				isset($options['db']['pass']) ? $options['db']['pass'] : '',
-				isset($options['db']['host']) ? $options['db']['host'] : '127.0.0.1',
-				isset($options['db']['port']) ? $options['db']['port'] : null,
-				isset($options['db']['type']) ? $options['db']['type'] : DB::DB_MYSQL,
-				isset($options['db']['dsn']) ? $options['db']['dsn'] : 'charset=utf8'
+				getDef($options, ['db.user','db.username'], 'root'),
+				getDef($options, ['db.pass','db.password'], ''),
+				getDef($options, ['db.host','db.hostname'], '127.0.0.1'),
+				getDef($options, 'db.port', null),
+				getDef($options, 'db.type', DB::DB_MYSQL),
+				getDef($options, 'db.dsn', 'charset=utf8'),
 			);
 		}else{
 			$this->db = new DB();
