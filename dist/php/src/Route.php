@@ -27,9 +27,10 @@ class Route{
 		}
 
 		$this->cb = $cb;
-		$this->require = isset($options['require']) ? $options['require'] : [];
-		$this->check = isset($options['check']) ? $options['check'] : [];
-		$this->priority = isset($options['priority']) ? $options['priority'] : 0;
+		$this->require = getDef($options, 'require', []);
+		$this->check = getDef($options, 'check', []);
+		$this->priority = getDef($options, 'priority', 0);
+		$this->db = getDef($options, 'db', false);
 	}
 
 	public function isTriggered($value){

@@ -7,7 +7,8 @@ class RouteHook{
 		$this->options = [
 			'require' => [],
 			'check' => [],
-			'priority' => 1
+			'priority' => 0,
+			'db' => false,
 		];
 	}
 	public function require($key, $val){
@@ -20,6 +21,10 @@ class RouteHook{
 	}
 	public function priority($value){
 		$this->options['priority'] = $value;
+		return $this;
+	}
+	public function db($value){
+		$this->options['db'] = $value;
 		return $this;
 	}
 }

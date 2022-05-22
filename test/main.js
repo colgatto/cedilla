@@ -25,6 +25,8 @@
 /**/
 
 ç.api('queryTest', { danno: 15 }).then( res => ç.render('tabellaTest').with(res).on('body') );
+ç.api('testInsert', { danno: 22 }).then( res => console.log(res) );
+/*
 ç.api('customBD').then( res => ç.render('tabellaTest2').with(res).on('body') );
 ç.api('testRegex26').then( res  => ç.dom.q('body').append(res) );
 ç.api('testPriority').then( res => ç.dom.q('body').append(' ['+res+']') );

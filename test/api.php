@@ -20,18 +20,75 @@ $api->route( [ 'cleanTest', 'test', 'main', 'root' ], function(){
 
 /////////////////
 
+/*
+$db = new DB('dadomaster', 'root', 'root');
+$db->connect();
+$db->beginTransaction();
+try{
+	// Getting single column from the single row
+	$user = $db->exec("SELECT name FROM users WHERE email = ?", [$email])->fetchColumn();
+	$v = $db->exec("INSERT INTO tipo_danno(nome) VALUES(:nome)", [
+		':nome' => 'test2'
+	]);
+	var_dump($v);
+	/**
+	// Getting single row
+	$user = $db->exec("SELECT * FROM users WHERE email = ?", [$email])->fetch();
+	var_dump($user);
+	// Getting array of rows
+	$users = $db->exec("SELECT * FROM users LIMIT ?,?", [$offset, $limit])->fetchAll();
+	var_dump($users);
+	// Count Updated
+	$updated = $db->exec("UPDATE users SET balance = ? WHERE id = ?", [$balance, $id])->rowCount();
+	var_dump($updated);
+	/**
+	$db->commit();
+	echo 'ok';
+}catch(Exception $e){
+	$db->rollback();
+	echo $e;
+}
+/**/
+
 $api->route( 'queryTest', function($route){
 	$route->require('danno', 'int');
+	$route->db(true);
 },function($p){
-	$v = $this->db->query('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
+	$v = $this->db->exec('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
 		':fk_tipo_danno' => $p['danno']
-	]);
+	])->fetchAll();
 	return $v;
 });
 
-$api->route( 'customBD', function(){
-	$customDB = $this->db->new('portal','root','root');
-	$v = $customDB->query('SELECT * FROM booking_uffici');
+$api->route( 'testInsert', function($route){
+	$route->require('danno', 'int');
+	$route->db(true);
+},function($p){
+	$this->db->beginTransaction();
+	try{
+		$v = $this->db->exec('INSERT INTO arma(nome,danni,fk_tipo_danno,tp_stat,fk_tipo_arma) VALUES (:nome, :danni, :fk_tipo_danno, :tp_stat, :fk_tipo_arma)', [
+			':nome' => 'Prova6',
+			':danni' => $p['danno'],
+			':tp_stat' => 'FOR',
+			':fk_tipo_danno' => 15,
+			':fk_tipo_arma' => 7
+		])->rowCount();
+		$this->db->commit();
+		return $v;
+	}catch(Exception $e){
+		$this->db->rollback();
+		return 'problem on db: ' . $e;
+	}
+});
+
+$api->route( 'customBD',[
+	'db' => [
+		'database' => 'portal',
+		'user' => 'root',
+		'pass' => 'root',
+	]
+], function(){
+	$v = $this->db->exec('SELECT * FROM booking_uffici')->fetchAll();
 	return $v;
 });
 
