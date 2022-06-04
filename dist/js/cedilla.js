@@ -8125,6 +8125,7 @@ exports.SourceMapConsumer = require('./lib/source-map-consumer').SourceMapConsum
 exports.SourceNode = require('./lib/source-node').SourceNode;
 
 },{"./lib/source-map-consumer":41,"./lib/source-map-generator":42,"./lib/source-node":43}],46:[function(require,module,exports){
+window.Handlebars = require("handlebars");
 window.cedilla = {
 	api: require('./modules/api'),
 	dom: require('./modules/dom'),
@@ -8135,7 +8136,7 @@ window.cedilla = {
 	DEBUG: false
 };
 window.ç = window.cedilla;
-},{"./modules/api":47,"./modules/arr":48,"./modules/cookies":49,"./modules/dom":50,"./modules/render":51,"./modules/str":52}],47:[function(require,module,exports){
+},{"./modules/api":47,"./modules/arr":48,"./modules/cookies":49,"./modules/dom":50,"./modules/render":51,"./modules/str":52,"handlebars":34}],47:[function(require,module,exports){
 
 const def = (options, key) => options[key] || api.default[key];
 
@@ -8405,7 +8406,6 @@ dom.makeTable = (data) => {
 
 module.exports = dom;
 },{"./str":52}],51:[function(require,module,exports){
-
 const Handlebars = require("handlebars");
 const sleep = async n => new Promise( r => setTimeout(r, n));
 
