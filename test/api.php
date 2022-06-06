@@ -14,9 +14,10 @@ $api = new Api([
 /////////////////
 
 //DA GESTIRE SE ROUTE è FUNZIONE
-$api->route( [ 'cleanTest', 'test', 'main', 'root' ], function(){
-	return 'done';
-});
+$api->route([ 'cleanTest', 'test', 'main', 'root' ])
+	->do(function(){
+		return 'done';
+	});
 
 /////////////////
 
@@ -50,51 +51,51 @@ try{
 }
 /**/
 
-$api->route( 'queryTest', function($route){
-	$route->require('danno', 'int');
-	$route->db(true);
-},function($p){
-	$v = $this->db->exec('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
-		':fk_tipo_danno' => $p['danno']
-	])->fetchAll();
-	return $v;
-});
-
-$api->route( 'testInsert', function($route){
-	$route->require('danno', 'int');
-	$route->db(true);
-},function($p){
-	$this->db->beginTransaction();
-	try{
-		$v = $this->db->exec('INSERT INTO arma(nome,danni,fk_tipo_danno,tp_stat,fk_tipo_arma) VALUES (:nome, :danni, :fk_tipo_danno, :tp_stat, :fk_tipo_arma)', [
-			':nome' => 'Prova6',
-			':danni' => $p['danno'],
-			':tp_stat' => 'FOR',
-			':fk_tipo_danno' => 15,
-			':fk_tipo_arma' => 7
-		])->rowCount();
-		$this->db->commit();
+$api->route('queryTest')
+	->require('danno', 'int')
+	->db(true)
+	->do(function($p){
+		$v = $this->db->exec('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
+			':fk_tipo_danno' => $p['danno']
+		])->fetchAll();
 		return $v;
-	}catch(Exception $e){
-		$this->db->rollback();
-		return 'problem on db: ' . $e;
-	}
-});
+	});
 
-$api->route( 'customBD',[
-	'db' => [
+$api->route('testInsert')
+	->require('danno', 'int')
+	->db(true)
+	->do(function($p){
+		$this->db->beginTransaction();
+		try{
+			$v = $this->db->exec('INSERT INTO arma(nome,danni,fk_tipo_danno,tp_stat,fk_tipo_arma) VALUES (:nome, :danni, :fk_tipo_danno, :tp_stat, :fk_tipo_arma)', [
+				':nome' => 'Prova6',
+				':danni' => $p['danno'],
+				':tp_stat' => 'FOR',
+				':fk_tipo_danno' => 15,
+				':fk_tipo_arma' => 7
+			])->rowCount();
+			$this->db->commit();
+			return $v;
+		}catch(Exception $e){
+			$this->db->rollback();
+			return 'problem on db: ' . $e;
+		}
+	});
+
+$api->route('customBD')
+	->db([
 		'database' => 'portal',
 		'user' => 'root',
 		'pass' => 'root',
-	]
-], function(){
-	$v = $this->db->exec('SELECT * FROM booking_uffici')->fetchAll();
-	return $v;
-});
+	])
+	->do(function(){
+		$v = $this->db->exec('SELECT * FROM booking_uffici')->fetchAll();
+		return $v;
+	});
 
 /////////////////
-
-$api->route( 'requireTest', [
+/*
+$api->route('requireTest', [
 	'require' => [
 		'testV' => true
 	], 
@@ -102,7 +103,7 @@ $api->route( 'requireTest', [
 	return $p['testV'];
 });
 
-$api->route( 'requireIntTest', [
+$api->route('requireIntTest', [
 	'require' => [
 		'testV' => 'int'
 	], 
@@ -110,7 +111,7 @@ $api->route( 'requireIntTest', [
 	return $p['testV'];
 });
 
-$api->route( 'requireListTest', [
+$api->route('requireListTest', [
 	'require' => [
 		'testV' => ['qui','quo','qua']
 	], 
@@ -120,7 +121,7 @@ $api->route( 'requireListTest', [
 
 /////////////////
 
-$api->route( 'checkPassed', [
+$api->route('checkPassed', [
 	'check' => [
 		'3UNDER30' => function(){ return 3 < 30; }
 	] 
@@ -128,7 +129,7 @@ $api->route( 'checkPassed', [
 	return 'done';
 });
 
-$api->route( 'checkNotPassedTest', [
+$api->route('checkNotPassedTest', [
 	'check' => [
 		'3OVER30' => function(){ return 3 > 30; }
 	] 
@@ -138,7 +139,7 @@ $api->route( 'checkNotPassedTest', [
 
 /////////////////
 
-$api->route( 'login', [
+$api->route('login', [
 	'require' => [
 		'username' => 'string',
 		'password' => 'string'
@@ -150,7 +151,7 @@ $api->route( 'login', [
 	return $this->response->done();
 });
 
-$api->route( 'testCedilla', [
+$api->route('testCedilla', [
 	'require' => [
 		'valA' => 'int',
 		'valB' => 'int',
@@ -171,23 +172,24 @@ $api->route( 'testCedilla', [
 
 /////////////////
 
-$api->route( '/testRegex([0-9]+)/', function($p, $matches){
+$api->route('/testRegex([0-9]+)/', function($p, $matches){
 	return 'passato con ' . $matches[1];
 });
 
 /////////////////
 
-$api->route( 'testPriority',[
+$api->route('testPriority',[
 	'priority' => 3
 ], function($p, $matches){
 	return 'vince 1';
 });
 
-$api->route( 'testPriority',function($route){
+$api->route('testPriority',function($route){
 //	$route->priority(6);
 }, function($p, $matches){
 	return 'vince 2';
 });
+*/
 
 $api->server();
 

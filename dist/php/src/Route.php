@@ -20,12 +20,6 @@ class Route{
 			$cb = $cb;
 		}
 
-		if(is_callable($options)){
-			$hook = new RouteHook();
-			$options($hook);
-			$options = $hook->options;
-		}
-
 		$this->cb = $cb;
 		$this->require = getDef($options, 'require', []);
 		$this->check = getDef($options, 'check', []);

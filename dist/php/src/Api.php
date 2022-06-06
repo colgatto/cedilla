@@ -12,10 +12,45 @@ class Api{
 		$this->routes = [];
 		$this->response = null;
 		$this->db = new DB( getDef($options, 'db', []) );
+		//$this->_current_route_name = $name;
+		$this->_current_route_data = [
+			'require' => [],
+			'check' => [],
+			'priority' => 0,
+			'db' => false
+		];
 	}
 
-	public function route($name, $optionsOrCb, $cb = null){
-		array_push($this->routes, new Route($this, $name, $optionsOrCb, $cb));
+	public function route($name){
+		$this->_current_route_name = $name;
+		$this->_current_route_data = [
+			'require' => [],
+			'check' => [],
+			'priority' => 0,
+			'db' => false
+		];
+		return $this;
+	}
+	
+	public function require($key, $val){
+		$this->_current_route_data['require'][$key] = $val;
+		return $this;
+	}
+	public function check($name, $cb){
+		$this->_current_route_data['check'][$name] = $cb;
+		return $this;
+	}
+	public function priority($value){
+		$this->_current_route_data['priority'] = $value;
+		return $this;
+	}
+	public function db($value){
+		$this->_current_route_data['db'] = $value;
+		return $this;
+	}
+
+	public function do($cb){
+		array_push($this->routes, new Route($this, $this->_current_route_name, $this->_current_route_data, $cb));
 		return $this;
 	}
 
