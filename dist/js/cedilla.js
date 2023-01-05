@@ -8156,6 +8156,9 @@ const api = (route, data = {}, opt = {}) => {
 
 	return new Promise( ( resolve, reject ) => {
 		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
+			if(res.time > api.default.response_max_warning_time) {
+				toastr.warning('/' + route + '<br>Time: ' + res.time, 'Slow response');
+			}
 			if(res.error){
 				if( !triggerGlobalError(res.error) ){
 					reject(res.error.message, res.error.code);
@@ -8170,7 +8173,8 @@ const api = (route, data = {}, opt = {}) => {
 api.default = {
 	webhook: 'api.php',
 	fetch_mode: 'same-origin',
-	fetch_credentials: 'same-origin'
+	fetch_credentials: 'same-origin',
+	response_max_warning_time: 3
 };
 
 api.errorCallback = {

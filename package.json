@@ -14,6 +14,7 @@
 	"author": "Colgatto <colgatto@protonmail.com> (https://github.com/colgatto)",
 	"license": "RWTFPL",
 	"dependencies": {
+		"browserify": "^17.0.0",
 		"handlebars": "^4.7.7"
 	}
 }
