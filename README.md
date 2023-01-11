@@ -122,5 +122,4 @@ valid `type` and default `port`
 	- fare una funzione generatrice `).catch( ç.api.catch( { CONFIG DELL' ERRORE } ) )`
 
 - ogni modulo diventa un proxy
-	- privatizza le chiavi con _ davanti es: ç.redner._pool
-
+	- privatizza le chiavi con _ davanti es: ç.render._pool (inutile se diventano class con metodi #, da testare come li converte browserify)
