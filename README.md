@@ -1,6 +1,12 @@
 # Cedilla
 Standalone backbone for webApp focused on single page application
 
+
+## build require
+```sh
+npm install -g uglify-js
+```
+
 # Frontend JS
 
 ```html
