@@ -13,8 +13,8 @@
 	"keywords": [],
 	"author": "Colgatto <colgatto@protonmail.com> (https://github.com/colgatto)",
 	"license": "RWTFPL",
-	"dependencies": {
-		"browserify": "^17.0.0",
-		"handlebars": "^4.7.7"
-	}
+	"devDependencies": {
+		"browserify": "^17.0.0"
+	},
+	"repository": "git@github.com:colgatto/cedilla.git"
 }
