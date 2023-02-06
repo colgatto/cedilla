@@ -1,10 +1,11 @@
-const Handlebars = require("handlebars");
 const sleep = async n => new Promise( r => setTimeout(r, n));
 
 class Render {
 	
 	constructor(templateName) {
 		
+		if(typeof window.Handlebars == 'undefined') throw new Error('Cedilla Render require Handlebars to work');
+
 		this.templateName = templateName;
 		this.template = null;
 		this.f = null;
@@ -29,7 +30,7 @@ class Render {
 	}
 
 	_compile(){
-		this.f = Handlebars.compile(this.template);
+		this.f = window.Handlebars.compile(this.template);
 	}
 
 	with(data){

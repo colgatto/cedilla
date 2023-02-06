@@ -1,4 +1,3 @@
-window.Handlebars = require("handlebars");
 window.cedilla = {
 	api: require('./modules/api'),
 	dom: require('./modules/dom'),
