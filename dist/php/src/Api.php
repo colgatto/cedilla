@@ -109,7 +109,7 @@ class Api{
 		$last_value = array_pop($expV);
 		if(count($expV) > 0) {
 
-			$routeLocation = substr($_SERVER['SCRIPT_FILENAME'],0, strrpos($_SERVER['SCRIPT_FILENAME'], DIRECTORY_SEPARATOR)+1 ) . 'route';
+			$routeLocation = substr($_SERVER['SCRIPT_FILENAME'],0, strrpos($_SERVER['SCRIPT_FILENAME'], DIRECTORY_SEPARATOR)+1 ) . 'routes';
 
 			for ($i=0, $l=count($expV); $i < $l; $i++) {
 				if(!preg_match('/^[a-zA-Z0-9_-]+$/', $expV[$i])) $this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID, $value);
