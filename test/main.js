@@ -32,6 +32,7 @@
 ç.api('testRegex26').then( res  => ç.dom.q('body').append(res) );
 ç.api('testPriority').then( res => ç.dom.q('body').append(' ['+res+']') );
 ç.api('main').then( res => console.log('test array: ' + res) );
+ç.api('sub:test').then( res => console.log('test sub: ' + res) );
 
 /*
 ç.api('testInsert', { danno: 22 }).then( res => console.log(res) );

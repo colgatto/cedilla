@@ -50,11 +50,11 @@ class Api{
 		}
 
 	}
-	public function getRoutes(){
+	public function getRoutes(): array{
 		return $this->routes;
 	}
 	
-	public function route($name){
+	public function route($name): Api{
 		$this->_current_route_name = $name;
 		$this->_current_route_data = [
 			'optional' => [],
@@ -67,7 +67,7 @@ class Api{
 		return $this;
 	}
 
-	public function optional($key, $val, $default = null){
+	public function optional(string $key, string $val, $default = null){
 		$args = func_get_args();
 		$this->_current_route_data['optional'][$key] = count($args) == 2 ? [
 			'val' => $val
@@ -77,38 +77,51 @@ class Api{
 		];
 		return $this;
 	}
-	public function require($key, $val){
+	public function require(string $key, string $val): Api{
 		$this->_current_route_data['require'][$key] = $val;
 		return $this;
 	}
-	public function check($name, $cb){
+	public function check(string $name, Callable $cb): Api{
 		$this->_current_route_data['check'][$name] = $cb;
 		return $this;
 	}
-	public function priority($value){
+	public function priority(int $value): Api{
 		$this->_current_route_data['priority'] = $value;
 		return $this;
 	}
-	public function csrf($value){
+	public function csrf(bool $value): Api{
 		$this->_current_route_data['csrf'] = $value;
 		return $this;
 	}
-	public function db($value){
+	public function db($value): Api{
 		$this->_current_route_data['db'] = $value;
 		return $this;
 	}
 
-	public function do($cb){
+	public function do(Callable $cb): Api{
 		array_push($this->routes, new Route($this, $this->_current_route_name, $this->_current_route_data, $cb));
 		return $this;
 	}
 
-	private function findPossibleRoute($value){
-		
+	private function findPossibleRoute($value): Route{
+
+		$expV = explode(':', $value);
+		$last_value = array_pop($expV);
+		if(count($expV) > 0) {
+
+			$routeLocation = substr($_SERVER['SCRIPT_FILENAME'],0, strrpos($_SERVER['SCRIPT_FILENAME'], DIRECTORY_SEPARATOR)+1 ) . 'route';
+
+			for ($i=0, $l=count($expV); $i < $l; $i++) {
+				if(!preg_match('/^[a-zA-Z0-9_-]+$/', $expV[$i])) $this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID, $value);
+				$routeLocation .= DIRECTORY_SEPARATOR . $expV[$i];
+			}
+			$api = $this;
+			require_once $routeLocation . '.php';
+		}
+
 		$trigg = [];
-		
 		foreach ($this->routes as $route) {
-			if( $route->isTriggered($value) ) array_push($trigg, $route );
+			if( $route->isTriggered($last_value) ) array_push($trigg, $route );
 		}
 		
 		if(count($trigg) == 0) $this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID, $value);
@@ -130,7 +143,7 @@ class Api{
 		if(!isset($_GET['_cedilla_route'])){
 			$this->response->error("Must define route", Error::ROUTE_UNDEFINED);
 		}
-		
+
 		$route = $this->findPossibleRoute( $_GET['_cedilla_route'] );
 
 		if($route->getCSRF() && !Security::checkCRSF()){
