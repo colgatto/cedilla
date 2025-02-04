@@ -6,7 +6,7 @@
 	"scripts": {
 		"bundle": "browserify src/core.js -o dist/js/cedilla.js",
 		"min": "browserify src/core.js | uglifyjs --compress --mangle > dist/js/cedilla.min.js",
-		"dist": "browserify src/core.js -o dist/js/cedilla.js && browserify src/core.js | uglifyjs --compress --mangle > dist/js/cedilla.min.js",
+		"dist": "browserify src/core.js -o dist/js/cedilla.js && browserify src/core.js | uglifyjs --compress > dist/js/cedilla.min.js",
 		"server": "php -S 127.0.0.1:3000 -t dist",
 		"dev": "browserify src/core.js -o dist/js/cedilla.js && php -S 127.0.0.1:3000 -t dist"
 	},

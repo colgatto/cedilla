@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<script src="../dist/js/cedilla.js"></script>
+	<script src="/test/lib/handlebars.4.7.8.min.js"></script>
+	<script src="/dist/js/cedilla.js"></script>
 	<title>Test</title>
 </head>
 <body>
 	<p>WE!</p>
 	<script id="tabellaTest" type="text/x-handlebars-template">
 		<table>
-			<tr><th>FUNZIONA</th><th>nome</th><th>danni</th><th>EVVIVA</th></tr>
+			<tr><th>name</th><th>surname</th><th>username</th><th>email</th><th>last_login</th></tr>
 			{{#each this}} 
-				<tr><td>{{pk_arma}}</td><td>{{nome}}</td><td>{{danni}}</td><td>{{tp_stat}}</td></tr>
+				<tr><td>{{name}}</td><td>{{surname}}</td><td>{{username}}</td><td>{{email}}</td><td>{{last_login}}</td></tr>
 			{{/each}}
 		</table>
 	</script>
 	<code id="api_response"></code>	
-	<script src="main.js"></script>
+	<script src="test/main.js"></script>
 </body>
 </html>

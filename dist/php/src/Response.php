@@ -4,6 +4,8 @@ namespace cedilla;
 
 class Response{
 	
+	private $tstart;
+	
 	function __construct($tstart){
 		$this->tstart = $tstart;
 	}
@@ -17,10 +19,10 @@ class Response{
 		]));
 	}
 
-	public function error($message = '', $code = Error::INTERNAL_ERROR){
+	public function error($message = '', $type = Error::INTERNAL_ERROR, $code = null){
 		header('Content-Type: application/json');
 		die(json_encode([
-			'error' => new Error($message, $code),
+			'error' => new Error($message, $type, $code),
 			'response' => false,
 			'time' => microtime(true) - $this->tstart
 		]));
@@ -31,6 +33,10 @@ class Response{
 		die('');
 	}
 	
+	public function html($value=''){
+		header('Content-Type: text/html');
+		die($value);
+	}
 }
 
 ?>

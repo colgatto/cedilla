@@ -1,7 +1,7 @@
 //CONFIG
 ç.DEBUG = true;
-ç.api.default.webhook = 'api.php';
-ç.render.default.templates_dir = '/cedilla/test/templates';
+ç.api.default.webhook = 'test/api.php';
+ç.render.default.templates_dir = 'test/templates';
 
 ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );
 
@@ -24,11 +24,16 @@
 });
 /**/
 
-ç.api('queryTest', { danno: 15 }).then( res => ç.render('tabellaTest').with(res).on('body') );
-ç.api('testInsert', { danno: 22 }).then( res => console.log(res) );
-/*
-ç.api('customBD').then( res => ç.render('tabellaTest2').with(res).on('body') );
+ç.api('queryTest', { danno: 15 }).then( res => {
+	//console.log(res);
+	ç.render('tabellaTest').with(res).on('body')
+});
+
 ç.api('testRegex26').then( res  => ç.dom.q('body').append(res) );
 ç.api('testPriority').then( res => ç.dom.q('body').append(' ['+res+']') );
 ç.api('main').then( res => console.log('test array: ' + res) );
+
+/*
+ç.api('testInsert', { danno: 22 }).then( res => console.log(res) );
+ç.api('customBD').then( res => ç.render('tabellaTest2').with(res).on('body') );
 /**/
