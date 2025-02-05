@@ -77,7 +77,7 @@ class Api{
 		];
 		return $this;
 	}
-	public function require(string $key, string $val): Api{
+	public function require(string $key, string | array $val): Api{
 		$this->_current_route_data['require'][$key] = $val;
 		return $this;
 	}

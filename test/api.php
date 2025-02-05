@@ -3,8 +3,10 @@
 require_once __DIR__ . '/../dist/php/cedilla.php';
 
 use cedilla\Api;
+use cedilla\Security;
 
 $api = new Api([
+	//'csrf' => true
 	'db' => [
 		'database' => 'templatilla',
 		'password' => 'root'
@@ -62,50 +64,35 @@ $api->route('customBD')
 
 /////////////////
 /**/
-$api->route('requireTest', [
-	'require' => [
-		'testV' => true
-	], 
-], function($p){
+
+$api->route('requireIntTest')
+->require('testV', 'int')
+->do(function($p){
 	return $p['testV'];
 });
 
-$api->route('requireIntTest', [
-	'require' => [
-		'testV' => 'int'
-	], 
-], function($p){
-	return $p['testV'];
-});
-
-$api->route('requireListTest', [
-	'require' => [
-		'testV' => ['qui','quo','qua']
-	], 
-], function($p){
+$api->route('requireListTest')
+->require('testV', ['qui','quo','qua'])
+->do(function($p){
 	return $p['testV'];
 });
 
 /////////////////
 
-$api->route('checkPassed', [
-	'check' => [
-		'3UNDER30' => function(){ return 3 < 30; }
-	] 
-], function($p){
+$api->route('checkPassed')
+->check('3UNDER30', function(){ return 3 < 30; })
+->do(function($p){
 	return 'done';
 });
 
-$api->route('checkNotPassedTest', [
-	'check' => [
-		'3OVER30' => function(){ return 3 > 30; }
-	] 
-], function($p){
+$api->route('checkNotPassedTest')
+->check('3OVER30', function(){ return 3 > 30; })
+->do(function($p){
 	return 'done';
 });
 
 /////////////////
-
+/*
 $api->route('testCedilla', [
 	'require' => [
 		'valA' => 'int',
@@ -126,6 +113,7 @@ $api->route('testCedilla', [
 });
 
 /////////////////
+/**/
 
 $api->route('/testRegex([0-9]+)/')
 ->do(function($p, $matches){
