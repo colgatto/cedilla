@@ -7,7 +7,7 @@ use cedilla\Security;
 
 $api = new Api();
 
-/*
+/**/
 $api = new Api([
 	//'csrf' => true
 	'db' => [
@@ -15,7 +15,7 @@ $api = new Api([
 		'password' => 'root'
 	]
 ]);
-*/
+/**/
 /////////////////
 
 //DA GESTIRE SE ROUTE è FUNZIONE

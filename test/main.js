@@ -24,7 +24,7 @@
 });
 /**/
 
-ç.api('queryTest', { danno: 15 }).then( res => {
+ç.api('queryTest').then( res => {
 	//console.log(res);
 	ç.render('tabellaTest').with(res).on('body')
 });
