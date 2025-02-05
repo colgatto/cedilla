@@ -17,7 +17,7 @@ class Route{
 
 	public $db;
 
-	function __construct($api, $matcher, $optionsOrCb, $cb = null){
+	function __construct(Api $api, string | array $matcher, array | callable $optionsOrCb, ?callable $cb = null){
 		$this->api = $api;
 		$this->matcher = $matcher;
 		$this->dataset = [];
@@ -39,36 +39,37 @@ class Route{
 		$this->db = getDef($options, 'db', false);
 	}
 
-	public function getMatcher(){
+	public function getMatcher(): string | array{
 		return $this->matcher;
 	}
-	public function getRequire(){
+	public function getRequire(): array{
 		return $this->require;
 	}
-	public function getOptional(){
+	public function getOptional(): array{
 		return $this->optional;
 	}
-	public function getCheck(){
+	public function getCheck(): array{
 		return $this->check;
 	}
-	public function getPriority(){
+	public function getPriority(): int{
 		return $this->priority;
 	}
-	public function getCSRF(){
+	public function getCSRF(): bool{
 		return $this->csrf;
 	}
 
-	public function overrideArgs($data){
+	public function overrideArgs(array $data): void{
 		$this->args = $data;
 	}
 
-	public function isTriggered($value){
+	public function isTriggered(string $value): bool{
 		if( is_array($this->matcher) && in_array($value, $this->matcher) ) return true;
-		if( $this->isRegex($this->matcher) && preg_match($this->matcher, $value, $this->dataset)) return true;
+		if( is_string($this->matcher) && $this->isRegex($this->matcher) && preg_match($this->matcher, $value, $this->dataset)) return true;
 		if( $this->matcher == $value ) return true;
+		return false;
 	}
 	
-	public function validateCheck(){
+	public function validateCheck(): void{
 		foreach ($this->check as $name => $cb) {
 			if(!$cb($this->args)){
 				$this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
@@ -76,7 +77,7 @@ class Route{
 		}
 	}
 	
-	private function parseValue($key, $v, $vv){
+	private function parseValue(string $key, mixed $v, mixed $vv): mixed{
 		if(is_bool($v)) {
 			if(!$v){
 				$this->api->response->error("Parameter '$key' is not required", Error::PARAM_NOT_REQUIRED, $key);
@@ -97,7 +98,7 @@ class Route{
 		return $vv;
 	}
 
-	public function appendOptional($data){
+	public function appendOptional(array $data) : void{
 		foreach ($this->optional as $key => $v) {
 			if(!isset($data[$key])) {
 				//isset() non conta null come valore
@@ -108,20 +109,26 @@ class Route{
 		}
 	}
 
-	public function appendRequire($data){
+	public function appendRequire(array $data): void{
 		foreach ($this->require as $key => $v) {
 			if(!isset($data[$key])) $this->api->response->error("Parameter '$key' is required", Error::PARAM_REQUIRED, $key);
 			$this->args[$key] = $this->parseValue($key, $v, $data[$key]);
 		}
-		return $this->args;
 	}
 
-	public function exec(){
+	public function exec(): mixed{
 		return $this->cb->bindTo($this->api)($this->args, $this->dataset);
 	}
 	
-	private function isRegex($pattern){
-		return is_string($pattern) && (@preg_match($pattern, null) !== false);
+	private function isRegex(string $pattern): bool{
+		if($this->api->debug){
+			set_error_handler(function(){ return true; });
+			$res = @preg_match($pattern, '') !== false;
+			set_error_handler($this->api->_error_handler);
+		}else{
+			$res = @preg_match($pattern, '') !== false;
+		}
+		return $res;
 	}
 
 }

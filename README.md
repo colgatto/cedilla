@@ -44,6 +44,23 @@ A perfect example is when you must change the webook for the `api` module
 ç.api.default.webhook = 'custom/path/for/my_api.php';
 ```
 
+## ced attributes
+Cedilla aggiunge determinati attributi con prefisso `ced-` che facilitano le richieste api alle routes.
+
+- `ced-action` si usa per dichiarare il nome della route da triggerare 
+- `ced-args-<nome args>` viene usato per passare argomenti alla route scelta
+- `ced-callback` viene usato per indicare la funzione da richiamare una volta avvenuta la risposta
+
+**N.B.**
+
+`ced-callback` richiede solo il nome della funzione da eseguire **SENZA** le parentesi finali di esecuzione
+
+#### Esempio
+```html
+<button class="btn btn-primary" ced-action="login" ced-args-username="pippo" ced-args-password="segreto" ced-callback="document.location.reload">
+```
+
+
 ### Module `arr`
 
 ### `pickRandom(array)`

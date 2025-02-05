@@ -3,13 +3,15 @@
 require_once __DIR__ . '/../dist/php/cedilla.php';
 
 use cedilla\Api;
+use cedilla\Security;
 
 $api = new Api();
 
 /*
 $api = new Api([
+	//'csrf' => true
 	'db' => [
-		'database' => 'dadomaster',
+		'database' => 'templatilla',
 		'password' => 'root'
 	]
 ]);
@@ -18,13 +20,11 @@ $api = new Api([
 
 //DA GESTIRE SE ROUTE è FUNZIONE
 $api->route([ 'cleanTest', 'test', 'main', 'root' ])
-	->do(function(){
-		return 'done';
-	});
+->do(function(){
+	return 'done';
+});
 
-/////////////////
-
-/*
+/**
 $db = new DB('dadomaster', 'root', 'root');
 $db->connect();
 $db->beginTransaction();
@@ -54,37 +54,6 @@ try{
 }
 /**
 
-$api->route('queryTest')
-	->require('danno', 'int')
-	->db(true)
-	->do(function($p){
-		$v = $this->db->exec('SELECT * FROM arma WHERE fk_tipo_danno = :fk_tipo_danno', [
-			':fk_tipo_danno' => $p['danno']
-		])->fetchAll();
-		return $v;
-	});
-
-$api->route('testInsert')
-	->require('danno', 'int')
-	->db(true)
-	->do(function($p){
-		$this->db->beginTransaction();
-		try{
-			$v = $this->db->exec('INSERT INTO arma(nome,danni,fk_tipo_danno,tp_stat,fk_tipo_arma) VALUES (:nome, :danni, :fk_tipo_danno, :tp_stat, :fk_tipo_arma)', [
-				':nome' => 'Prova6',
-				':danni' => $p['danno'],
-				':tp_stat' => 'FOR',
-				':fk_tipo_danno' => 15,
-				':fk_tipo_arma' => 7
-			])->rowCount();
-			$this->db->commit();
-			return $v;
-		}catch(Exception $e){
-			$this->db->rollback();
-			return 'problem on db: ' . $e;
-		}
-	});
-
 $api->route('customBD')
 	->db([
 		'database' => 'portal',
@@ -92,68 +61,41 @@ $api->route('customBD')
 		'pass' => 'root',
 	])
 	->do(function(){
-		$v = $this->db->exec('SELECT * FROM booking_uffici')->fetchAll();
+		$v = $this->db->exec('SELECT * FROM users')->fetchAll();
 		return $v;
 	});
 
 /////////////////
 /**/
-$api->route('requireTest', [
-	'require' => [
-		'testV' => true
-	], 
-], function($p){
+
+$api->route('requireIntTest')
+->require('testV', 'int')
+->do(function($p){
 	return $p['testV'];
 });
 
-$api->route('requireIntTest', [
-	'require' => [
-		'testV' => 'int'
-	], 
-], function($p){
-	return $p['testV'];
-});
-
-$api->route('requireListTest', [
-	'require' => [
-		'testV' => ['qui','quo','qua']
-	], 
-], function($p){
+$api->route('requireListTest')
+->require('testV', ['qui','quo','qua'])
+->do(function($p){
 	return $p['testV'];
 });
 
 /////////////////
 
-$api->route('checkPassed', [
-	'check' => [
-		'3UNDER30' => function(){ return 3 < 30; }
-	] 
-], function($p){
+$api->route('checkPassed')
+->check('3UNDER30', function(){ return 3 < 30; })
+->do(function($p){
 	return 'done';
 });
 
-$api->route('checkNotPassedTest', [
-	'check' => [
-		'3OVER30' => function(){ return 3 > 30; }
-	] 
-], function($p){
+$api->route('checkNotPassedTest')
+->check('3OVER30', function(){ return 3 > 30; })
+->do(function($p){
 	return 'done';
 });
 
 /////////////////
-
-$api->route('login', [
-	'require' => [
-		'username' => 'string',
-		'password' => 'string'
-	], 
-], function($p){
-	if($p['username'] == 'pippo' && $p['password'] == '12345' ){
-		$_SESSION['user'] = 'pippo';
-	}
-	return $this->response->done();
-});
-
+/*
 $api->route('testCedilla', [
 	'require' => [
 		'valA' => 'int',
@@ -174,24 +116,36 @@ $api->route('testCedilla', [
 });
 
 /////////////////
+/**/
 
-$api->route('/testRegex([0-9]+)/', function($p, $matches){
-	return 'passato con ' . $matches[1];
+$api->route('/testRegex([0-9]+)/')
+->do(function($p, $matches){
+	$this->response->done('passato con ' . $matches[1]);
 });
 
 /////////////////
 
-$api->route('testPriority',[
-	'priority' => 3
-], function($p, $matches){
+$api->route('queryTest')
+->db(true)
+->do(function($p){
+	$res = $this->db->exec('SELECT * FROM users')->fetchAll(PDO::FETCH_ASSOC);
+	$this->response->done($res);
+});
+
+/////////////////
+
+$api->route('testPriority')
+->priority(3)
+->do(function($p, $matches){
 	return 'vince 1';
 });
 
-$api->route('testPriority',function($route){
-//	$route->priority(6);
-}, function($p, $matches){
+$api->route('testPriority')
+->priority(6)
+->do(function($p, $matches){
 	return 'vince 2';
 });
+/**/
 
 $api->server();
 

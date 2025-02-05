@@ -1,3 +1,7 @@
+<?php
+	require_once __DIR__ . '/../dist/php/cedilla.php';
+	use cedilla\Security;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +20,8 @@
 			{{/each}}
 		</table>
 	</script>
-	<code id="api_response"></code>	
+	<code id="api_response"></code>
+	<?php Security::CSRFTag(); ?>
 	<script src="test/main.js"></script>
 </body>
 </html>
