@@ -3,6 +3,7 @@
 namespace cedilla;
 
 use \PDO;
+use \PDOStatement;
 use \Exception;
 
 class DB {
@@ -36,7 +37,7 @@ class DB {
 		$this->inTrans = false;
 	}
 
-	public function connect( $options = [] ) {
+	public function connect( $options = [] ): PDO{
 		$this->dbName = getDef( $options, ['db', 'database'], $this->dbName );
 		$this->user = getDef( $options, ['user', 'username'], $this->user );
 		$this->pass = getDef( $options, ['pass', 'password'], $this->pass );
@@ -64,7 +65,7 @@ class DB {
 		return $this->pdo;
 	}
 
-	public function beginTransaction() {
+	public function beginTransaction(): bool{
 		if ( !$this->inTrans ) {
 			$this->inTrans = true;
 			return $this->pdo->beginTransaction();
@@ -73,26 +74,26 @@ class DB {
 		}
 	}
 
-	public function commit() {
+	public function commit(): bool{
 		$this->inTrans = false;
 		return $this->pdo->commit();
 	}
 
-	public function rollback() {
+	public function rollback(): bool{
 		$this->inTrans = false;
 		return $this->pdo->rollback();
 	}
 
-	function exec( $sql, $params = NULL ) {
+	function exec(string $sql, ?array $params = null ): PDOStatement | false{
 		$stmt = $this->pdo->prepare( $sql );
 		$stmt->execute( $params );
 		return $stmt;
 	}
-	function name() {
+	function name(): string{
 		return $this->dbName;
 	}
 
-	function lastPk() {
+	function lastPk(): string | false{
 		return $this->pdo->lastInsertId();
 	}
 }

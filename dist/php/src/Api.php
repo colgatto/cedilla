@@ -22,7 +22,7 @@ class Api{
 	public $response;
 	public $db;
 	
-	function __construct($options = []){
+	function __construct(array $options = []){
 		$this->tstart = microtime(true);
 		$this->routes = [];
 		$this->response = null;
@@ -54,7 +54,7 @@ class Api{
 		return $this->routes;
 	}
 	
-	public function route($name): Api{
+	public function route(string | array $name): Api{
 		$this->_current_route_name = $name;
 		$this->_current_route_data = [
 			'optional' => [],
@@ -67,7 +67,7 @@ class Api{
 		return $this;
 	}
 
-	public function optional(string $key, string $val, $default = null){
+	public function optional(string $key, string $val, mixed $default = null): Api{
 		$args = func_get_args();
 		$this->_current_route_data['optional'][$key] = count($args) == 2 ? [
 			'val' => $val
@@ -81,7 +81,7 @@ class Api{
 		$this->_current_route_data['require'][$key] = $val;
 		return $this;
 	}
-	public function check(string $name, Callable $cb): Api{
+	public function check(string $name, callable $cb): Api{
 		$this->_current_route_data['check'][$name] = $cb;
 		return $this;
 	}
@@ -93,17 +93,17 @@ class Api{
 		$this->_current_route_data['csrf'] = $value;
 		return $this;
 	}
-	public function db($value): Api{
+	public function db(bool | array $value): Api{
 		$this->_current_route_data['db'] = $value;
 		return $this;
 	}
 
-	public function do(Callable $cb): Api{
+	public function do(callable $cb): Api{
 		array_push($this->routes, new Route($this, $this->_current_route_name, $this->_current_route_data, $cb));
 		return $this;
 	}
 
-	private function findPossibleRoute($value): Route{
+	private function findPossibleRoute(string $value): Route{
 
 		$expV = explode(':', $value);
 		$last_value = array_pop($expV);
@@ -136,7 +136,7 @@ class Api{
 
 	}
 
-	public function server(){
+	public function server(): void{
 		
 		$this->response = new Response($this->tstart);
 

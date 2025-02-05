@@ -16,7 +16,7 @@ class Error{
 	public $type;
 	public $message;
 
-	public function __construct( $message = '', $type = Error::INTERNAL_ERROR, $code = null ){
+	public function __construct(string $message = '', string $type = Error::INTERNAL_ERROR, null | int | string $code = null ){
 		$this->message = $message;
 		$this->type = $type;
 		$this->code = $code;
