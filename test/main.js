@@ -1,6 +1,6 @@
 //CONFIG
 ç.DEBUG = true;
-ç.api.default.webhook = 'api.php';
+ç.api.default.webhook = 'test/api.php';
 ç.render.default.templates_dir = '/cedilla/test/templates';
 
 ç.dom.q('body').append( ç.dom('p', ç.str.titled('funGE_TUTTo', true) ) );

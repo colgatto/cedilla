@@ -4,13 +4,16 @@ require_once __DIR__ . '/../dist/php/cedilla.php';
 
 use cedilla\Api;
 
+$api = new Api();
+
+/*
 $api = new Api([
 	'db' => [
 		'database' => 'dadomaster',
 		'password' => 'root'
 	]
 ]);
-
+*/
 /////////////////
 
 //DA GESTIRE SE ROUTE è FUNZIONE
@@ -49,7 +52,7 @@ try{
 	$db->rollback();
 	echo $e;
 }
-/**/
+/**
 
 $api->route('queryTest')
 	->require('danno', 'int')
@@ -94,7 +97,7 @@ $api->route('customBD')
 	});
 
 /////////////////
-/*
+/**/
 $api->route('requireTest', [
 	'require' => [
 		'testV' => true
@@ -189,7 +192,6 @@ $api->route('testPriority',function($route){
 }, function($p, $matches){
 	return 'vince 2';
 });
-*/
 
 $api->server();
 
