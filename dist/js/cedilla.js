@@ -2,6 +2,7 @@
 window.cedilla = {
 	api: require('./modules/api'),
 	dom: require('./modules/dom'),
+	obj: require('./modules/obj'),
 	str: require('./modules/str'),
 	arr: require('./modules/arr'),
 	cookies: require('./modules/cookies'),
@@ -9,7 +10,7 @@ window.cedilla = {
 	DEBUG: false
 };
 window.ç = window.cedilla;
-},{"./modules/api":2,"./modules/arr":3,"./modules/cookies":4,"./modules/dom":5,"./modules/render":6,"./modules/str":7}],2:[function(require,module,exports){
+},{"./modules/api":2,"./modules/arr":3,"./modules/cookies":4,"./modules/dom":5,"./modules/obj":6,"./modules/render":7,"./modules/str":8}],2:[function(require,module,exports){
 
 const def = (options, key) => options[key] || api.default[key];
 
@@ -26,6 +27,10 @@ const api = (route, data = {}, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: JSON.stringify(data)
 	};
+	
+	if(api.default.CSRFToken){
+		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
+	}
 
 	return new Promise( ( resolve, reject ) => {
 		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
@@ -47,40 +52,76 @@ api.default = {
 	webhook: 'api.php',
 	fetch_mode: 'same-origin',
 	fetch_credentials: 'same-origin',
-	response_max_warning_time: 3
+	response_max_warning_time: 3,
+	fetch_content_type: 'application/octet-stream',
+	CSRFToken: null
+};
+
+api.raw = (route, data, opt = {}) => {
+
+	const fetch_route = def(opt, 'webhook') + '?_raw=1&_cedilla_route=' + encodeURI(route);
+	const fetch_opt = {
+		method: 'POST',
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': def(opt, 'fetch_content_type'),
+		},
+		mode: def(opt, 'fetch_mode'),
+		credentials: def(opt, 'fetch_credentials'), 
+		body: data
+	};
+	
+	if(api.default.CSRFToken){
+		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
+	}
+
+	return new Promise( ( resolve, reject ) => {
+		return fetch(fetch_route, fetch_opt).then( res => res.json() ).then( res => {
+			if(res.time > api.default.response_max_warning_time) {
+				console.warn('/' + route + '<br>Time: ' + res.time, 'Slow response');
+			}
+			if(res.error){
+				if( !triggerGlobalError(res.error) ){
+					reject(res.error.message, res.error.code);
+				}
+			}else{
+				resolve(res.response);
+			}
+		});
+	});
 };
 
 api.errorCallback = {
-	default: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	default: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	route_undefined: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	route_undefined: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	route_invalid: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	route_invalid: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	check: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	check: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	param_required: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	param_required: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	param_not_required: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	param_not_required: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	param_invalid: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	param_invalid: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
-	internal_error: (message) => {
-		if(cedilla.DEBUG) console.error(message);
+	internal_error: (err) => {
+		if(cedilla.DEBUG) console.error(err);
 		return false;
 	},
 };
@@ -104,6 +145,34 @@ const triggerGlobalError = err => {
 	}
 	return api.errorCallback.default(err.message, err.code);
 };
+
+document.addEventListener('click', function (event) {
+	const t = event.target.closest('[ced-action]');
+	if (!t) return;
+	const args = {};
+	for (let i = 0; i < t.attributes.length; i++) {
+		const att = t.attributes[i];
+		if(att.name.slice(0,8) == 'ced-args'){
+			args[att.name.slice(9)] = att.value;
+		}
+	}
+	const action = t.getAttribute('ced-action');
+	let cb = t.getAttribute('ced-callback');
+	if(cb){
+		cb = cb.split('.');
+		let context = window;
+		let lastContext = window;
+		for (let i = 0; i < cb.length; i++) {
+			lastContext = context;
+			context = context[cb[i]];
+		}
+		//rebind context to main context, prevent Uncaught TypeError: Illegal invocation
+		context = context.bind(lastContext);
+		api(action, args).then((data) => context(data));
+	}else{
+		api(action, args);
+	}
+});
 
 module.exports = api;
 },{}],3:[function(require,module,exports){
@@ -282,7 +351,97 @@ dom.makeTable = (data) => {
 }
 
 module.exports = dom;
-},{"./str":7}],6:[function(require,module,exports){
+},{"./str":8}],6:[function(require,module,exports){
+const obj = {};
+
+/**
+ * Recursively copy the values of all of the enumerable own properties from one or more source objects to a target object. 
+ * @param {object} object The target object to copy to.
+ * @param {object} toassign The object to copy.
+ * @return {object} The target object.
+ */
+obj.recAssign = ( object, ...toassign ) => {
+	const isPlainObject = o => o !== null && typeof o !== 'undefined' && typeof o.constructor !== 'undefined' && o.constructor.prototype === Object.prototype;
+	const assign = ( ref, key, value ) => {
+		if( isPlainObject(value) ){
+			if( !isPlainObject(ref[key]) ){
+				ref[key] = {};
+			}
+			mergeInObject( ref[key], value );
+		}else{
+			ref[key] = value;
+		}
+	};
+	const mergeInObject = ( dest, data ) => {
+		Object.keys( data ).forEach( key => {
+			assign( dest, key, data[key] );
+		});
+	};
+	if( typeof object === 'object' ){
+		toassign.forEach( data => {
+			if( isPlainObject(data) ){
+				mergeInObject( object, data );
+			}
+		});
+	}
+	return object;
+};
+
+/**
+ * Recursively trasform object into array of {key, value} object
+ * @param {object} data The starting object.
+ * @return {array} The final array.
+ */
+obj.flatObj = (data) => {
+	let keys = Object.keys(data);
+	let plain = [];
+	for (let i = 0; i < keys.length; i++) {
+		const k = keys[i];
+		const v = data[k];
+		if(v === null || typeof v != 'object'){
+			plain.push({key: k, value: v});
+		}else{
+			if(Object.keys(v).length == 0){
+				plain.push({key: k, value: null});
+			}else{
+				plain.push(...obj.flatObj(v));
+			}
+		}
+	}
+	return plain;
+};
+
+/**
+ * Return the object with object.key equals to value searched
+ * @param {object[]} objList array of object to search into.
+ * @param {string} key The key to use for match.
+ * @param {any} value The value searched.
+ * @return {any} The return value.
+ */
+obj.getBy = (objList, key, value) => {
+	for (let i = 0; i < objList.length; i++) {
+		if(objList[i][key] === value)
+			return objList[i];
+	}
+};
+
+/**
+ * Return the index of object with object.key equals to value searched, -1 if not found
+ * @param {object[]} objList array of object to search into.
+ * @param {string} key The key to use for match.
+ * @param {any} value The value searched.
+ * @return {int} The index found.
+ */
+obj.getIndexBy = (objList, key, value) => {
+	for (let i = 0; i < objList.length; i++) {
+		if(objList[i][key] == value)
+			return i;
+	}
+	return -1;
+};
+
+module.exports = obj;
+},{}],7:[function(require,module,exports){
 const sleep = async n => new Promise( r => setTimeout(r, n));
 
 class Render {
@@ -349,7 +508,7 @@ render.default = {
 
 module.exports = render;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 
 const str = {};
 
