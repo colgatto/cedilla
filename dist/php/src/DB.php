@@ -84,16 +84,16 @@ class DB {
 		return $this->pdo->rollback();
 	}
 
-	function exec(string $sql, ?array $params = null ): PDOStatement | false{
+	public function exec(string $sql, ?array $params = null ): PDOStatement | false{
 		$stmt = $this->pdo->prepare( $sql );
 		$stmt->execute( $params );
 		return $stmt;
 	}
-	function name(): string{
+	public function name(): string{
 		return $this->dbName;
 	}
 
-	function lastPk(): string | false{
+	public function lastPk(): string | false{
 		return $this->pdo->lastInsertId();
 	}
 }
