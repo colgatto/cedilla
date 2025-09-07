@@ -4,16 +4,18 @@ namespace cedilla;
 
 class Route{
 	
-	private $api;
-	private $matcher;
-	private $dataset;
-	private $args;
+	private Api $api;
+	private string | array $matcher;
+	private array $dataset;
+	private array $args;
+	private ?string $raw;
 	private $cb;
-	private $require;
-	private $optional;
-	private $check;
-	private $csrf;
-	private $priority;
+	private array $require;
+	private array $optional;
+	private array $check;
+	private string | bool $csrf;
+	private string $filepath;
+	private int $priority;
 
 	public $db;
 
@@ -22,6 +24,7 @@ class Route{
 		$this->matcher = $matcher;
 		$this->dataset = [];
 		$this->args = [];
+		$this->raw = null;
 
 		if(is_null($cb)){
 			$options = [];
@@ -36,6 +39,7 @@ class Route{
 		$this->check = getDef($options, 'check', []);
 		$this->priority = getDef($options, 'priority', 0);
 		$this->csrf = getDef($options, 'csrf', false);
+		$this->filepath = getDef($options, 'filepath', '');
 		$this->db = getDef($options, 'db', false);
 	}
 
@@ -57,9 +61,12 @@ class Route{
 	public function getCSRF(): bool{
 		return $this->csrf;
 	}
+	public function getPath(): string{
+		return $this->filepath;
+	}
 
-	public function overrideArgs(array $data): void{
-		$this->args = $data;
+	public function overrideArgs(string $data): void{
+		$this->raw = $data;
 	}
 
 	public function isTriggered(string $value): bool{
@@ -70,8 +77,11 @@ class Route{
 	}
 	
 	public function validateCheck(): void{
-		foreach ($this->check as $name => $cb) {
-			if(!$cb($this->args)){
+		$fullCheck = array_merge($this->api->globalCheck, $this->check);
+		foreach ($fullCheck as $name => $cb) {
+			if(is_bool($cb)){
+				if(!$cb) $this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
+			}elseif(!$cb($this->args)){
 				$this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
 			}
 		}
@@ -117,7 +127,7 @@ class Route{
 	}
 
 	public function exec(): mixed{
-		return $this->cb->bindTo($this->api)($this->args, $this->dataset);
+		return $this->cb->bindTo($this->api)($this->raw ? $this->raw : $this->args, $this->dataset);
 	}
 	
 	private function isRegex(string $pattern): bool{
@@ -132,6 +142,5 @@ class Route{
 	}
 
 }
-
 
 ?>

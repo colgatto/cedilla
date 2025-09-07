@@ -12,9 +12,9 @@ class Error{
 	const PARAM_INVALID = 'PARAM_INVALID';
 	const INTERNAL_ERROR = 'INTERNAL_ERROR';
 
-	public $code;
-	public $type;
-	public $message;
+	public null | int | string $code;
+	public string $type;
+	public string $message;
 
 	public function __construct(string $message = '', string $type = Error::INTERNAL_ERROR, null | int | string $code = null ){
 		$this->message = $message;

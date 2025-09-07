@@ -16,17 +16,21 @@ class DB {
 	const DB_DB2 = 'Db2';
 	const DB_FIREBIRD = 'Firebird';
 
-	private $dbName;
-	private $user;
-	private $pass;
-	private $host;
-	private $port;
-	private $type;
-	private $dsn;
-	private $inTrans;
-	public $pdo;
+	private string | false $dbName;
+	private string $user;
+	private string $pass;
+	private string $host;
+	private int $port;
+	private string $type;
+	private string $dsn;
+	private bool $inTrans;
+	private ?int $pk_user;
+	public PDO $pdo;
+	private PDOStatement $lastStmt;
+	public bool $enableLog;
 
-	public function __construct( $options ) {
+	public function __construct( $options, $pk_user = null ) {
+		$this->pk_user = $pk_user;
 		$this->dbName = getDef( $options, ['db', 'database'], false );
 		$this->user = getDef( $options, ['user', 'username'], 'root' );
 		$this->pass = getDef( $options, ['pass', 'password'], '' );
@@ -34,6 +38,7 @@ class DB {
 		$this->port = getDef( $options, 'port', null );
 		$this->type = getDef( $options, 'type', DB::DB_MYSQL );
 		$this->dsn = getDef( $options, 'dsn', 'charset=utf8' );
+		$this->enableLog = getDef( $options, ['log', 'enableLog'], false );
 		$this->inTrans = false;
 	}
 
@@ -48,15 +53,25 @@ class DB {
 
 		switch ($this->type) {
 			case DB::DB_MYSQL:
-				$this->pdo = new PDO( 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn, $this->user, $this->pass, [
+				if($this->dbName){
+					$connString = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn;
+				}else{
+					$connString = 'mysql:host=' . $this->host . ';port=' . $this->port . ';' . $this->dsn;
+				}
+				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
 					PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'",
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-				] );
+				]);
 				break;
 			case DB::DB_MSSQL:
-				$this->pdo = new PDO( 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';', $this->user, $this->pass, [
+				if($this->dbName){
+					$connString = 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';' . $this->dsn;
+				}else{
+					$connString = 'sqlsrv:Server=' . $this->host . ';' . $this->dsn;
+				}
+				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-				] );
+				]);
 				break;
 			default:
 				throw new Exception( 'Unknown database type: ' . $this->type );
@@ -84,16 +99,47 @@ class DB {
 		return $this->pdo->rollback();
 	}
 
-	function exec(string $sql, ?array $params = null ): PDOStatement | false{
-		$stmt = $this->pdo->prepare( $sql );
-		$stmt->execute( $params );
-		return $stmt;
+	public function exec(string $sql, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
+		$this->lastStmt = $this->pdo->prepare( $sql );
+
+		if(is_null($enableLog)) $enableLog = $this->enableLog;
+
+		if($enableLog){
+			$logStmt = $this->pdo->prepare( "INSERT INTO auditing(query, params, fk_users, status) values(:query, :params, :fk_users, 0)");
+			$logStmt->execute( [
+				':query' => $sql,
+				':params' => $params ? json_encode($params) : null,
+				':fk_users' => $this->pk_user
+			] );
+			$logId = $this->lastPk();
+			try{
+				$this->lastStmt->execute( $params );
+				$this->pdo->prepare( "UPDATE auditing SET status = 1 WHERE pk = :pk")->execute( [
+					':pk' => $logId
+				]);
+			}catch(\PDOException $e){
+				$this->pdo->prepare( "UPDATE auditing SET status = -1, exception = :exception WHERE pk = :pk")->execute( [
+					':exception' => $e->getMessage(),
+					':pk' => $logId
+				]);
+				throw $e;
+			}
+		}else{
+			$this->lastStmt->execute( $params );
+		}
+
+		return $this->lastStmt;
 	}
-	function name(): string{
+	public function name(): string{
 		return $this->dbName;
 	}
 
-	function lastPk(): string | false{
+	public function lastPk(): string | false{
 		return $this->pdo->lastInsertId();
 	}
+
+	public function closeCursor(): bool{
+		return $this->lastStmt->closeCursor();
+	}
+
 }
