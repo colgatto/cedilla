@@ -39,7 +39,7 @@ const api = (route, data = {}, opt = {}) => {
 			}
 			if(res.error){
 				if( !triggerGlobalError(res.error) ){
-					reject(res.error.message, res.error.code);
+					reject(res.error);
 				}
 			}else{
 				resolve(res.response);
@@ -82,7 +82,7 @@ api.raw = (route, data, opt = {}) => {
 			}
 			if(res.error){
 				if( !triggerGlobalError(res.error) ){
-					reject(res.error.message, res.error.code);
+					reject(res.error);
 				}
 			}else{
 				resolve(res.response);
@@ -93,57 +93,75 @@ api.raw = (route, data, opt = {}) => {
 
 api.errorCallback = {
 	default: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	route_undefined: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	route_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	check: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	param_required: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	param_not_required: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	param_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	internal_error: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
+	exception_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
+	generic_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
+	fatal_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 };
 
 const triggerGlobalError = err => {
-	switch(err.code){
+	switch(err.type){
 		case 'ROUTE_UNDEFINED':
-			return api.errorCallback.route_undefined(err.message, err.code);
+			return api.errorCallback.route_undefined(err);
 		case 'ROUTE_INVALID':
-			return api.errorCallback.route_invalid(err.message, err.code);
+			return api.errorCallback.route_invalid(err);
 		case 'CHECK_NOT_PASS':
-			return api.errorCallback.check(err.message, err.code);
+			return api.errorCallback.check(err);
 		case 'PARAM_REQUIRED':
-			return api.errorCallback.param_required(err.message, err.code);
+			return api.errorCallback.param_required(err);
 		case 'PARAM_NOT_REQUIRED':
-			return api.errorCallback.param_not_required(err.message, err.code);
+			return api.errorCallback.param_not_required(err);
 		case 'PARAM_INVALID':
-			return api.errorCallback.param_invalid(err.message, err.code);
+			return api.errorCallback.param_invalid(err);
 		case 'INTERNAL_ERROR':
-			return api.errorCallback.internal_error(err.message, err.code);
+			return api.errorCallback.internal_error(err);
+		case 'EXCEPTION_ERROR':
+			return api.errorCallback.exception_error(err);
+		case 'FATAL_ERROR':
+			return api.errorCallback.fatal_error(err);
+		case 'GENERIC_ERROR':
+			return api.errorCallback.generic_error(err);
 	}
-	return api.errorCallback.default(err.message, err.code);
+	return api.errorCallback.default(err);
 };
 
 document.addEventListener('click', function (event) {
@@ -511,11 +529,6 @@ module.exports = render;
 },{}],8:[function(require,module,exports){
 
 const str = {};
-
-str.zerofill = (v) => {
-	v = parseInt(v);
-	return ( v >= 0 && v <= 9 ? '0' : '' ) + v;
-};
 
 str.firstUp = (v, forceLower = false) => v.slice(0,1).toUpperCase() + ( forceLower ? v.slice(1).toLowerCase() : v.slice(1) );
 

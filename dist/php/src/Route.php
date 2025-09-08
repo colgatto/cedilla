@@ -80,9 +80,9 @@ class Route{
 		$fullCheck = array_merge($this->api->globalCheck, $this->check);
 		foreach ($fullCheck as $name => $cb) {
 			if(is_bool($cb)){
-				if(!$cb) $this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
+				if(!$cb) $this->api->response->error("Check '$name' not passed", $name, Error::CHECK_NOT_PASS);
 			}elseif(!$cb($this->args)){
-				$this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
+				$this->api->response->error("Check '$name' not passed", $name, Error::CHECK_NOT_PASS);
 			}
 		}
 	}
@@ -90,12 +90,12 @@ class Route{
 	private function parseValue(string $key, mixed $v, mixed $vv): mixed{
 		if(is_bool($v)) {
 			if(!$v){
-				$this->api->response->error("Parameter '$key' is not required", Error::PARAM_NOT_REQUIRED, $key);
+				$this->api->response->error("Parameter '$key' is not required", $key, Error::PARAM_NOT_REQUIRED);
 			}
 		}elseif(is_array($v) && !in_array($vv, $v)){
-			$this->api->response->error("Parameter '$key' is not valid", Error::PARAM_INVALID, $key);
+			$this->api->response->error("Parameter '$key' is not valid", $key, Error::PARAM_INVALID);
 		}elseif(is_callable($v) && !$v($vv)){
-			$this->api->response->error("Parameter '$key' is not valid", Error::PARAM_INVALID, $key);
+			$this->api->response->error("Parameter '$key' is not valid", $key, Error::PARAM_INVALID);
 		}elseif(is_string($v)){
 			switch ($v) {
 				case 'bool': return boolval($vv);
@@ -121,7 +121,7 @@ class Route{
 
 	public function appendRequire(array $data): void{
 		foreach ($this->require as $key => $v) {
-			if(!isset($data[$key])) $this->api->response->error("Parameter '$key' is required", Error::PARAM_REQUIRED, $key);
+			if(!isset($data[$key])) $this->api->response->error("Parameter '$key' is required", $key, Error::PARAM_REQUIRED);
 			$this->args[$key] = $this->parseValue($key, $v, $data[$key]);
 		}
 	}

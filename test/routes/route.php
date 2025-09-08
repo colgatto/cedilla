@@ -29,4 +29,16 @@ $api->route('priority')
 	return 'vince 2';
 });
 
+$api->route('error')
+->do(function($p, $matches){
+	trigger_error('user error');
+	return 'ok';
+});
+
+$api->route('exception')
+->do(function($p, $matches){
+	throw new Exception('custom exception');
+	return 'ok';
+});
+
 ?>

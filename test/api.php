@@ -10,6 +10,7 @@ $api = new Api();
 /**/
 $api = new Api([
 	//'csrf' => true
+	'debug' => true,
 	'db' => [
 		'database' => 'templatilla',
 		'password' => 'root',

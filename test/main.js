@@ -6,11 +6,13 @@
 testRoute('route:regex34', () => ç.api('route:regex34') );
 testRoute('route:priority', () => ç.api('route:priority') );
 testRoute('route:checkPassed', () => ç.api('route:checkPassed') );
+testRoute('route:exception', () => ç.api('route:exception') );
+testRoute('route:error', () => ç.api('route:error') );
 
 test('db:select', (id) => {
 	ç.api('db:select').then( res => {
 		ç.render('tabellaTest').with(res).on(`#${id} .response`);
-	}).catch((err)=>{
+	}).catch((err) => {
 		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
 	});
 });

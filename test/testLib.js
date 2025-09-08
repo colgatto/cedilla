@@ -23,9 +23,11 @@ const test = (name, cb) => {
 		<div class="error"></div>
 		<hr>
 	</div>`;
-	cb(id).then(res => {
+	cb(id);
+	/*.then(res => {
 		ç.dom.q(`#${id} .response`).innerHTML = JSON.stringify(res, null, 4);
 	}).catch((err)=>{
 		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
 	});
+	*/
 };
