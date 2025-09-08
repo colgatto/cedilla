@@ -12,7 +12,7 @@ $api = new Api([
 	//'csrf' => true
 	'debug' => true,
 	'db' => [
-		'database' => 'templatilla',
+		'database' => 'templatilla2',
 		'password' => 'root',
 		'port' => 3306
 	]

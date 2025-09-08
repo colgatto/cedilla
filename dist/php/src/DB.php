@@ -142,4 +142,38 @@ class DB {
 		return $this->lastStmt->closeCursor();
 	}
 
+	public function stored($name, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
+		switch ($this->type) {
+			case DB::DB_MYSQL:
+				if(is_null($params)){
+					return $this->exec("CALL $name()", null, $enableLog);
+				}
+				$pStr = [];
+				$pVal = [];
+				if(array_is_list($params)){
+					for ($i=0, $l = count($params); $i < $l; $i++) { 
+						array_push($pStr, ":param_$i");
+						$pVal[":param_$i"] = $params[$i];
+					}
+				}else{
+					foreach ($params as $key => $value) {
+						array_push($pStr, ":$key");
+						$pVal[":$key"] = $value;
+					}
+				}
+				return $this->exec("CALL $name(" . implode(',', $pStr) . ")", $pVal, $enableLog);
+
+			case DB::DB_MSSQL:
+				if(is_null($params)){
+					return $this->exec("EXECUTE $name", null, $enableLog);
+				}
+				$pStr = [];
+				$pVal = [];
+				foreach ($params as $key => $value) {
+					array_push($pStr, "@$key = :$key");
+					$pVal[":$key"] = $value;
+				}
+				return $this->exec("EXECUTE $name " . implode(',', $pStr), $pVal, $enableLog);
+		}
+	}
 }

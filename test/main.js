@@ -16,3 +16,27 @@ test('db:select', (id) => {
 		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
 	});
 });
+
+test('db:stored', (id) => {
+	ç.api('db:stored').then( res => {
+		ç.render('tabellaTest').with(res).on(`#${id} .response`);
+	}).catch((err) => {
+		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
+	});
+});
+
+test('db:storedParams', (id) => {
+	ç.api('db:storedParams').then( res => {
+		ç.render('tabellaTest').with(res).on(`#${id} .response`);
+	}).catch((err) => {
+		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
+	});
+});
+
+test('db:storedList', (id) => {
+	ç.api('db:storedList').then( res => {
+		ç.render('tabellaTest').with(res).on(`#${id} .response`);
+	}).catch((err) => {
+		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
+	});
+});
