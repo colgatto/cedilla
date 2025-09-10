@@ -19,6 +19,12 @@ class Route{
 
 	public $db;
 
+	const PARAM_STRING = 'string';
+	const PARAM_BOOL = 'bool';
+	const PARAM_INT = 'int';
+	const PARAM_FLOAT = 'float';
+	const PARAM_RAW = 'raw';
+
 	function __construct(Api $api, string | array $matcher, array | callable $optionsOrCb, ?callable $cb = null){
 		$this->api = $api;
 		$this->matcher = $matcher;
@@ -98,11 +104,11 @@ class Route{
 			$this->api->response->error("Parameter '$key' is not valid", $key, Error::PARAM_INVALID);
 		}elseif(is_string($v)){
 			switch ($v) {
-				case 'bool': return boolval($vv);
-				case 'string': return strval($vv);
-				case 'int': return intval($vv);
-				case 'float': return floatval($vv);
-				case 'raw': return $vv;
+				case Route::PARAM_BOOL: return boolval($vv);
+				case Route::PARAM_STRING: return strval($vv);
+				case Route::PARAM_INT: return intval($vv);
+				case Route::PARAM_FLOAT: return floatval($vv);
+				case Route::PARAM_RAW: return $vv;
 			}
 		}
 		return $vv;
