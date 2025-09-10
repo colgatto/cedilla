@@ -25,6 +25,7 @@ const api = (route, data = {}, opt = {}) => {
 				console.warn('/' + route + '<br>Time: ' + res.time, 'Slow response');
 			}
 			if(res.error){
+				res.error.toString = function(){ return this.message; }
 				if( !triggerGlobalError(res.error) ){
 					reject(res.error);
 				}
@@ -68,6 +69,7 @@ api.raw = (route, data, opt = {}) => {
 				console.warn('/' + route + '<br>Time: ' + res.time, 'Slow response');
 			}
 			if(res.error){
+				res.error.toString = function(){ return this.message; }
 				if( !triggerGlobalError(res.error) ){
 					reject(res.error);
 				}

@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const PATH_TEMPLATILLA = path.join(__dirname, '..', '..', 'templatilla');
+//const PATH_TEMPLATILLA = path.join(__dirname, '..', '..', 'templatilla');
+const PATH_TEMPLATILLA = '/var/www/templatilla';
 
 function rm_cp($source, $dest){
 	fs.rmSync($dest, { recursive: true, force: true });
