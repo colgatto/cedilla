@@ -25,8 +25,9 @@ const api = (route, data = {}, opt = {}) => {
 				console.warn('/' + route + '<br>Time: ' + res.time, 'Slow response');
 			}
 			if(res.error){
+				res.error.toString = function(){ return this.message; }
 				if( !triggerGlobalError(res.error) ){
-					reject(res.error.message, res.error.code);
+					reject(res.error);
 				}
 			}else{
 				resolve(res.response);
@@ -68,8 +69,9 @@ api.raw = (route, data, opt = {}) => {
 				console.warn('/' + route + '<br>Time: ' + res.time, 'Slow response');
 			}
 			if(res.error){
+				res.error.toString = function(){ return this.message; }
 				if( !triggerGlobalError(res.error) ){
-					reject(res.error.message, res.error.code);
+					reject(res.error);
 				}
 			}else{
 				resolve(res.response);
@@ -80,35 +82,47 @@ api.raw = (route, data, opt = {}) => {
 
 api.errorCallback = {
 	default: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	route_undefined: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	route_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	check: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	param_required: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	param_not_required: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	param_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 	internal_error: (err) => {
-		if(cedilla.DEBUG) console.error(err);
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
+	exception_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
+	generic_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
+	fatal_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
 };
@@ -129,6 +143,12 @@ const triggerGlobalError = err => {
 			return api.errorCallback.param_invalid(err);
 		case 'INTERNAL_ERROR':
 			return api.errorCallback.internal_error(err);
+		case 'EXCEPTION_ERROR':
+			return api.errorCallback.exception_error(err);
+		case 'FATAL_ERROR':
+			return api.errorCallback.fatal_error(err);
+		case 'GENERIC_ERROR':
+			return api.errorCallback.generic_error(err);
 	}
 	return api.errorCallback.default(err);
 };

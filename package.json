@@ -9,7 +9,7 @@
 		"dist": "browserify src/core.js -o dist/js/cedilla.js && yarn min",
 		"server": "php -S 127.0.0.1:3000",
 		"dev": "browserify src/core.js -o dist/js/cedilla.js && php -S 127.0.0.1:3000",
-		"templatilla": "yarn dist && node test/build_tlla.js"
+		"templatilla": "yarn dist && node build/build_tlla.js"
 	},
 	"keywords": [],
 	"author": "Colgatto <colgatto@protonmail.com> (https://github.com/colgatto)",

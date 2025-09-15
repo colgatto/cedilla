@@ -26,6 +26,7 @@ class DB {
 	private bool $inTrans;
 	private ?int $pk_user;
 	public PDO $pdo;
+	private PDOStatement $lastStmt;
 	public bool $enableLog;
 
 	public function __construct( $options, $pk_user = null ) {
@@ -52,15 +53,25 @@ class DB {
 
 		switch ($this->type) {
 			case DB::DB_MYSQL:
-				$this->pdo = new PDO( 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn, $this->user, $this->pass, [
+				if($this->dbName){
+					$connString = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn;
+				}else{
+					$connString = 'mysql:host=' . $this->host . ';port=' . $this->port . ';' . $this->dsn;
+				}
+				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
 					PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'",
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-				] );
+				]);
 				break;
 			case DB::DB_MSSQL:
-				$this->pdo = new PDO( 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';' . $this->dsn, $this->user, $this->pass, [
+				if($this->dbName){
+					$connString = 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';' . $this->dsn;
+				}else{
+					$connString = 'sqlsrv:Server=' . $this->host . ';' . $this->dsn;
+				}
+				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-				] );
+				]);
 				break;
 			default:
 				throw new Exception( 'Unknown database type: ' . $this->type );
@@ -89,7 +100,7 @@ class DB {
 	}
 
 	public function exec(string $sql, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
-		$stmt = $this->pdo->prepare( $sql );
+		$this->lastStmt = $this->pdo->prepare( $sql );
 
 		if(is_null($enableLog)) $enableLog = $this->enableLog;
 
@@ -102,7 +113,7 @@ class DB {
 			] );
 			$logId = $this->lastPk();
 			try{
-				$stmt->execute( $params );
+				$this->lastStmt->execute( $params );
 				$this->pdo->prepare( "UPDATE auditing SET status = 1 WHERE pk = :pk")->execute( [
 					':pk' => $logId
 				]);
@@ -114,10 +125,10 @@ class DB {
 				throw $e;
 			}
 		}else{
-			$stmt->execute( $params );
+			$this->lastStmt->execute( $params );
 		}
 
-		return $stmt;
+		return $this->lastStmt;
 	}
 	public function name(): string{
 		return $this->dbName;
@@ -125,5 +136,44 @@ class DB {
 
 	public function lastPk(): string | false{
 		return $this->pdo->lastInsertId();
+	}
+
+	public function closeCursor(): bool{
+		return $this->lastStmt->closeCursor();
+	}
+
+	public function stored($name, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
+		switch ($this->type) {
+			case DB::DB_MYSQL:
+				if(is_null($params)){
+					return $this->exec("CALL $name()", null, $enableLog);
+				}
+				$pStr = [];
+				$pVal = [];
+				if(array_is_list($params)){
+					for ($i=0, $l = count($params); $i < $l; $i++) { 
+						array_push($pStr, ":param_$i");
+						$pVal[":param_$i"] = $params[$i];
+					}
+				}else{
+					foreach ($params as $key => $value) {
+						array_push($pStr, ":$key");
+						$pVal[":$key"] = $value;
+					}
+				}
+				return $this->exec("CALL $name(" . implode(',', $pStr) . ")", $pVal, $enableLog);
+
+			case DB::DB_MSSQL:
+				if(is_null($params)){
+					return $this->exec("EXECUTE $name", null, $enableLog);
+				}
+				$pStr = [];
+				$pVal = [];
+				foreach ($params as $key => $value) {
+					array_push($pStr, "@$key = :$key");
+					$pVal[":$key"] = $value;
+				}
+				return $this->exec("EXECUTE $name " . implode(',', $pStr), $pVal, $enableLog);
+		}
 	}
 }

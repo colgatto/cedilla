@@ -31,17 +31,30 @@ class Api{
 		$this->debug = getDef($options, 'debug', false);
 		$this->enableCSRF = getDef($options, 'csrf', false);
 		$this->globalCheck = getDef($options, 'check', []);
-		
 		if($this->debug){
+
 			$this->_error_handler = function($errno, $errstr, $errfile = null, $errline = null, $errcontext = null){
-				$this->response->error("(" . $errno . ")" . $errstr . ($errfile ? ("\n" . $errfile . ":" . $errline) : ''));
+				$this->response->error( $errstr . ($errfile ? ("\n" . $errfile . ":" . $errline) : ''), $errno, Error::FATAL_ERROR);
 			};
+
 			$this->_fatal_error_handler = function(){
 				$error = error_get_last();
-				if ( $error && $error["type"] == E_ERROR ) $this->response->error($error);
+				if ( $error ) {
+					/*
+					E_ERROR: 1
+					E_PARSE: 4
+					E_CORE_ERROR: 16
+					E_COMPILE_ERROR: 64
+					E_USER_ERROR: 256
+					*/
+					if( $error["type"] == E_ERROR || $error["type"] == E_PARSE || $error["type"] == E_CORE_ERROR || $error["type"] == E_COMPILE_ERROR || $error["type"] == E_USER_ERROR ) {
+						$this->response->error( $error, $error["type"], Error::FATAL_ERROR);
+					}
+				}
 			};
+
 			$this->_exception_error_handler = function($e){
-				$this->response->error(get_class($e) . " " . $e->getMessage() . "\n" . $e->getTraceAsString());
+				$this->response->error(get_class($e) . " " . $e->getMessage() . "\n" . $e->getTraceAsString(), 0, Error::EXCEPTION_ERROR);
 			};
 
 			if(function_exists('xdebug_disable')) xdebug_disable();
@@ -54,7 +67,7 @@ class Api{
 	public function getRoutes(): array{
 		return $this->routes;
 	}
-	
+
 	public function route(string | array $name): Api{
 		$this->_current_route_name = $name;
 		$this->_current_route_data = [
@@ -63,6 +76,7 @@ class Api{
 			'check' => [],
 			'priority' => 0,
 			'csrf' => $this->enableCSRF,
+			'filepath' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]['file'],
 			'db' => false
 		];
 		return $this;
@@ -114,7 +128,7 @@ class Api{
 			$routeLocation = substr($_SERVER['SCRIPT_FILENAME'], 0, $matches[1][1]+1 ) . 'routes';
 
 			for ($i=0, $l=count($expV); $i < $l; $i++) {
-				if(!preg_match('/^[a-zA-Z0-9_-]+$/', $expV[$i])) $this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID, $value);
+				if(!preg_match('/^[a-zA-Z0-9_-]+$/', $expV[$i])) $this->response->error("Route '$value' is not valid", $value, Error::ROUTE_INVALID);
 				$routeLocation .= '/' . $expV[$i];
 			}
 			$api = $this;
@@ -126,7 +140,7 @@ class Api{
 			if( $route->isTriggered($last_value) ) array_push($trigg, $route );
 		}
 		
-		if(count($trigg) == 0) $this->response->error("Route '$value' is not valid", Error::ROUTE_INVALID, $value);
+		if(count($trigg) == 0) $this->response->error("Route '$value' is not valid", $value, Error::ROUTE_INVALID);
 		
 		usort($trigg, function ($a, $b){
 			if($a->getPriority() > $b->getPriority()) return -1; 
@@ -141,13 +155,13 @@ class Api{
 	public function server(): void{
 		
 		if(!isset($_GET['_cedilla_route'])){
-			$this->response->error("Must define route", Error::ROUTE_UNDEFINED);
+			$this->response->error("Must define route", 0, Error::ROUTE_UNDEFINED);
 		}
 
 		$route = $this->findPossibleRoute( $_GET['_cedilla_route'] );
 
 		if($route->getCSRF() && !Security::checkCRSF()){
-			$this->response->error("CSRF not passed", Error::INTERNAL_ERROR, 'csrf');
+			$this->response->error("CSRF not passed", 'csrf', Error::INTERNAL_ERROR);
 		}
 
 		$raw = isset($_GET['_raw']);

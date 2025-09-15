@@ -8,20 +8,29 @@ class Route{
 	private string | array $matcher;
 	private array $dataset;
 	private array $args;
+	private ?string $raw;
 	private $cb;
 	private array $require;
 	private array $optional;
 	private array $check;
 	private string | bool $csrf;
+	private string $filepath;
 	private int $priority;
 
 	public $db;
+
+	const PARAM_STRING = 'string';
+	const PARAM_BOOL = 'bool';
+	const PARAM_INT = 'int';
+	const PARAM_FLOAT = 'float';
+	const PARAM_RAW = 'raw';
 
 	function __construct(Api $api, string | array $matcher, array | callable $optionsOrCb, ?callable $cb = null){
 		$this->api = $api;
 		$this->matcher = $matcher;
 		$this->dataset = [];
 		$this->args = [];
+		$this->raw = null;
 
 		if(is_null($cb)){
 			$options = [];
@@ -36,6 +45,7 @@ class Route{
 		$this->check = getDef($options, 'check', []);
 		$this->priority = getDef($options, 'priority', 0);
 		$this->csrf = getDef($options, 'csrf', false);
+		$this->filepath = getDef($options, 'filepath', '');
 		$this->db = getDef($options, 'db', false);
 	}
 
@@ -57,9 +67,12 @@ class Route{
 	public function getCSRF(): bool{
 		return $this->csrf;
 	}
+	public function getPath(): string{
+		return $this->filepath;
+	}
 
-	public function overrideArgs(array $data): void{
-		$this->args = $data;
+	public function overrideArgs(string $data): void{
+		$this->raw = $data;
 	}
 
 	public function isTriggered(string $value): bool{
@@ -73,9 +86,9 @@ class Route{
 		$fullCheck = array_merge($this->api->globalCheck, $this->check);
 		foreach ($fullCheck as $name => $cb) {
 			if(is_bool($cb)){
-				if(!$cb) $this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
+				if(!$cb) $this->api->response->error("Check '$name' not passed", $name, Error::CHECK_NOT_PASS);
 			}elseif(!$cb($this->args)){
-				$this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
+				$this->api->response->error("Check '$name' not passed", $name, Error::CHECK_NOT_PASS);
 			}
 		}
 	}
@@ -83,19 +96,19 @@ class Route{
 	private function parseValue(string $key, mixed $v, mixed $vv): mixed{
 		if(is_bool($v)) {
 			if(!$v){
-				$this->api->response->error("Parameter '$key' is not required", Error::PARAM_NOT_REQUIRED, $key);
+				$this->api->response->error("Parameter '$key' is not required", $key, Error::PARAM_NOT_REQUIRED);
 			}
 		}elseif(is_array($v) && !in_array($vv, $v)){
-			$this->api->response->error("Parameter '$key' is not valid", Error::PARAM_INVALID, $key);
+			$this->api->response->error("Parameter '$key' is not valid", $key, Error::PARAM_INVALID);
 		}elseif(is_callable($v) && !$v($vv)){
-			$this->api->response->error("Parameter '$key' is not valid", Error::PARAM_INVALID, $key);
+			$this->api->response->error("Parameter '$key' is not valid", $key, Error::PARAM_INVALID);
 		}elseif(is_string($v)){
 			switch ($v) {
-				case 'bool': return boolval($vv);
-				case 'string': return strval($vv);
-				case 'int': return intval($vv);
-				case 'float': return floatval($vv);
-				case 'raw': return $vv;
+				case Route::PARAM_BOOL: return boolval($vv);
+				case Route::PARAM_STRING: return strval($vv);
+				case Route::PARAM_INT: return intval($vv);
+				case Route::PARAM_FLOAT: return floatval($vv);
+				case Route::PARAM_RAW: return $vv;
 			}
 		}
 		return $vv;
@@ -114,13 +127,13 @@ class Route{
 
 	public function appendRequire(array $data): void{
 		foreach ($this->require as $key => $v) {
-			if(!isset($data[$key])) $this->api->response->error("Parameter '$key' is required", Error::PARAM_REQUIRED, $key);
+			if(!isset($data[$key])) $this->api->response->error("Parameter '$key' is required", $key, Error::PARAM_REQUIRED);
 			$this->args[$key] = $this->parseValue($key, $v, $data[$key]);
 		}
 	}
 
 	public function exec(): mixed{
-		return $this->cb->bindTo($this->api)($this->args, $this->dataset);
+		return $this->cb->bindTo($this->api)($this->raw ? $this->raw : $this->args, $this->dataset);
 	}
 	
 	private function isRegex(string $pattern): bool{

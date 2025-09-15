@@ -5,17 +5,20 @@ require_once __DIR__ . '/../dist/php/cedilla.php';
 use cedilla\Api;
 use cedilla\Security;
 
+/*
 $api = new Api();
-
 /**/
 $api = new Api([
 	//'csrf' => true
+	'debug' => true,
 	'db' => [
-		'database' => 'templatilla',
-		'password' => 'root'
+		'database' => 'templatilla2',
+		'password' => 'root',
+		'port' => 3306
 	]
 ]);
-/**/
+
+/*
 /////////////////
 
 //DA GESTIRE SE ROUTE è FUNZIONE
@@ -66,7 +69,7 @@ $api->route('customBD')
 	});
 
 /////////////////
-/**/
+/**
 
 $api->route('requireIntTest')
 ->require('testV', 'int')
@@ -78,20 +81,6 @@ $api->route('requireListTest')
 ->require('testV', ['qui','quo','qua'])
 ->do(function($p){
 	return $p['testV'];
-});
-
-/////////////////
-
-$api->route('checkPassed')
-->check('3UNDER30', function(){ return 3 < 30; })
-->do(function($p){
-	return 'done';
-});
-
-$api->route('checkNotPassedTest')
-->check('3OVER30', function(){ return 3 > 30; })
-->do(function($p){
-	return 'done';
 });
 
 /////////////////
@@ -115,36 +104,6 @@ $api->route('testCedilla', [
 	return 'hello ' . $_SESSION['user'] . ' result is ' . $result;
 });
 
-/////////////////
-/**/
-
-$api->route('/testRegex([0-9]+)/')
-->do(function($p, $matches){
-	$this->response->done('passato con ' . $matches[1]);
-});
-
-/////////////////
-
-$api->route('queryTest')
-->db(true)
-->do(function($p){
-	$res = $this->db->exec('SELECT * FROM users')->fetchAll(PDO::FETCH_ASSOC);
-	$this->response->done($res);
-});
-
-/////////////////
-
-$api->route('testPriority')
-->priority(3)
-->do(function($p, $matches){
-	return 'vince 1';
-});
-
-$api->route('testPriority')
-->priority(6)
-->do(function($p, $matches){
-	return 'vince 2';
-});
 /**/
 
 $api->server();

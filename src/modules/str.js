@@ -1,11 +1,6 @@
 
 const str = {};
 
-str.zerofill = (v) => {
-	v = parseInt(v);
-	return ( v >= 0 && v <= 9 ? '0' : '' ) + v;
-};
-
 str.firstUp = (v, forceLower = false) => v.slice(0,1).toUpperCase() + ( forceLower ? v.slice(1).toLowerCase() : v.slice(1) );
 
 str.titled = (v, forceLower = false, separators = ['_', ':']) => {
