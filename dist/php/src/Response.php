@@ -4,7 +4,7 @@ namespace cedilla;
 
 class Response{
 	
-	private $tstart;
+	private float $tstart;
 	
 	function __construct(float $tstart){
 		$this->tstart = $tstart;

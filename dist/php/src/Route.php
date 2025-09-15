@@ -4,16 +4,16 @@ namespace cedilla;
 
 class Route{
 	
-	private $api;
-	private $matcher;
-	private $dataset;
-	private $args;
+	private Api $api;
+	private string | array $matcher;
+	private array $dataset;
+	private array $args;
 	private $cb;
-	private $require;
-	private $optional;
-	private $check;
-	private $csrf;
-	private $priority;
+	private array $require;
+	private array $optional;
+	private array $check;
+	private string | bool $csrf;
+	private int $priority;
 
 	public $db;
 
@@ -70,8 +70,11 @@ class Route{
 	}
 	
 	public function validateCheck(): void{
-		foreach ($this->check as $name => $cb) {
-			if(!$cb($this->args)){
+		$fullCheck = array_merge($this->api->globalCheck, $this->check);
+		foreach ($fullCheck as $name => $cb) {
+			if(is_bool($cb)){
+				if(!$cb) $this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
+			}elseif(!$cb($this->args)){
 				$this->api->response->error("Check '$name' not passed", Error::CHECK_NOT_PASS, $name);
 			}
 		}
@@ -132,6 +135,5 @@ class Route{
 	}
 
 }
-
 
 ?>

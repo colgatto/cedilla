@@ -127,23 +127,23 @@ api.errorCallback = {
 };
 
 const triggerGlobalError = err => {
-	switch(err.code){
+	switch(err.type){
 		case 'ROUTE_UNDEFINED':
-			return api.errorCallback.route_undefined(err.message, err.code);
+			return api.errorCallback.route_undefined(err);
 		case 'ROUTE_INVALID':
-			return api.errorCallback.route_invalid(err.message, err.code);
+			return api.errorCallback.route_invalid(err);
 		case 'CHECK_NOT_PASS':
-			return api.errorCallback.check(err.message, err.code);
+			return api.errorCallback.check(err);
 		case 'PARAM_REQUIRED':
-			return api.errorCallback.param_required(err.message, err.code);
+			return api.errorCallback.param_required(err);
 		case 'PARAM_NOT_REQUIRED':
-			return api.errorCallback.param_not_required(err.message, err.code);
+			return api.errorCallback.param_not_required(err);
 		case 'PARAM_INVALID':
-			return api.errorCallback.param_invalid(err.message, err.code);
+			return api.errorCallback.param_invalid(err);
 		case 'INTERNAL_ERROR':
-			return api.errorCallback.internal_error(err.message, err.code);
+			return api.errorCallback.internal_error(err);
 	}
-	return api.errorCallback.default(err.message, err.code);
+	return api.errorCallback.default(err);
 };
 
 document.addEventListener('click', function (event) {

@@ -34,7 +34,7 @@
 ç.api('main').then( res => console.log('test array: ' + res) );
 ç.api('sub:test').then( res => console.log('test sub: ' + res) );
 
-/*
+/**/
 ç.api('testInsert', { danno: 22 }).then( res => console.log(res) );
 ç.api('customBD').then( res => ç.render('tabellaTest2').with(res).on('body') );
 /**/

@@ -1,5 +1,4 @@
 <?php
-
 if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_NONE) {
 	session_start();
 }
@@ -10,7 +9,7 @@ if(!isset($_SESSION['__cedilla'])){
 	];
 }
 
-function getDef($in, $keys, $def){
+function getDef(array $in, array | string $keys, mixed $def): mixed{
 	if (!is_array($keys)) $keys = [$keys];
 	for ($i=0; $i < count($keys); $i++) { 
 		$k = explode('.', $keys[$i]);

@@ -16,17 +16,20 @@ class DB {
 	const DB_DB2 = 'Db2';
 	const DB_FIREBIRD = 'Firebird';
 
-	private $dbName;
-	private $user;
-	private $pass;
-	private $host;
-	private $port;
-	private $type;
-	private $dsn;
-	private $inTrans;
-	public $pdo;
+	private string | false $dbName;
+	private string $user;
+	private string $pass;
+	private string $host;
+	private int $port;
+	private string $type;
+	private string $dsn;
+	private bool $inTrans;
+	private ?int $pk_user;
+	public PDO $pdo;
+	public bool $enableLog;
 
-	public function __construct( $options ) {
+	public function __construct( $options, $pk_user = null ) {
+		$this->pk_user = $pk_user;
 		$this->dbName = getDef( $options, ['db', 'database'], false );
 		$this->user = getDef( $options, ['user', 'username'], 'root' );
 		$this->pass = getDef( $options, ['pass', 'password'], '' );
@@ -34,6 +37,7 @@ class DB {
 		$this->port = getDef( $options, 'port', null );
 		$this->type = getDef( $options, 'type', DB::DB_MYSQL );
 		$this->dsn = getDef( $options, 'dsn', 'charset=utf8' );
+		$this->enableLog = getDef( $options, ['log', 'enableLog'], false );
 		$this->inTrans = false;
 	}
 
@@ -54,7 +58,7 @@ class DB {
 				] );
 				break;
 			case DB::DB_MSSQL:
-				$this->pdo = new PDO( 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';', $this->user, $this->pass, [
+				$this->pdo = new PDO( 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';' . $this->dsn, $this->user, $this->pass, [
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 				] );
 				break;
@@ -84,9 +88,35 @@ class DB {
 		return $this->pdo->rollback();
 	}
 
-	public function exec(string $sql, ?array $params = null ): PDOStatement | false{
+	public function exec(string $sql, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
 		$stmt = $this->pdo->prepare( $sql );
-		$stmt->execute( $params );
+
+		if(is_null($enableLog)) $enableLog = $this->enableLog;
+
+		if($enableLog){
+			$logStmt = $this->pdo->prepare( "INSERT INTO auditing(query, params, fk_users, status) values(:query, :params, :fk_users, 0)");
+			$logStmt->execute( [
+				':query' => $sql,
+				':params' => $params ? json_encode($params) : null,
+				':fk_users' => $this->pk_user
+			] );
+			$logId = $this->lastPk();
+			try{
+				$stmt->execute( $params );
+				$this->pdo->prepare( "UPDATE auditing SET status = 1 WHERE pk = :pk")->execute( [
+					':pk' => $logId
+				]);
+			}catch(\PDOException $e){
+				$this->pdo->prepare( "UPDATE auditing SET status = -1, exception = :exception WHERE pk = :pk")->execute( [
+					':exception' => $e->getMessage(),
+					':pk' => $logId
+				]);
+				throw $e;
+			}
+		}else{
+			$stmt->execute( $params );
+		}
+
 		return $stmt;
 	}
 	public function name(): string{

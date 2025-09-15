@@ -7,27 +7,30 @@ require_once __DIR__ . '/Route.php';
 require_once __DIR__ . '/Error.php';
 
 class Api{
-
+	
 	public $_error_handler;
+	public array $globalCheck;
 	private $_fatal_error_handler;
 	private $_exception_error_handler;
-	private $tstart;
-	private $routes;
-	public $debug;
-	private $_current_route_data;
-	private $_current_route_name;
-	private $enableCSRF;
-	public $response;
-	public $db;
+	private float $tstart;
+	private array $routes;
+	public bool $debug;
+	private array $_current_route_data;
+	private string $_current_route_name;
+	private bool $enableCSRF;
+	private ?int $pk_user;
+	public Response $response;
+	public DB $db;
 	
 	function __construct(array $options = []){
 		$this->tstart = microtime(true);
 		$this->routes = [];
-		$this->response = null;
-		$this->db = new DB( getDef($options, 'db', []) );
+		$this->response = new Response($this->tstart);
+		$this->pk_user = getDef($options, 'pk_user', null);
+		$this->db = new DB( getDef($options, 'db', []), $this->pk_user);
 		$this->debug = getDef($options, 'debug', false);
 		$this->enableCSRF = getDef($options, 'csrf', false);
-		$this->_current_route_data = null;
+		$this->globalCheck = getDef($options, 'check', []);
 		
 		if($this->debug){
 			$this->_error_handler = function($errno, $errstr, $errfile = null, $errline = null, $errcontext = null){
@@ -79,7 +82,7 @@ class Api{
 		$this->_current_route_data['require'][$key] = $val;
 		return $this;
 	}
-	public function check(string $name, callable $cb): Api{
+	public function check(string $name, callable | bool $cb): Api{
 		$this->_current_route_data['check'][$name] = $cb;
 		return $this;
 	}
@@ -137,8 +140,6 @@ class Api{
 
 	public function server(): void{
 		
-		$this->response = new Response($this->tstart);
-
 		if(!isset($_GET['_cedilla_route'])){
 			$this->response->error("Must define route", Error::ROUTE_UNDEFINED);
 		}
