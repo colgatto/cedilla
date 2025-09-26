@@ -3,3 +3,4 @@
 docs/*
 phpdox*
 node_modules/*
+build/config.js

@@ -15,6 +15,8 @@ class Api{
 	private float $tstart;
 	private array $routes;
 	public bool $debug;
+	public bool $override_error;
+	private bool $show_error;
 	private array $_current_route_data;
 	private string $_current_route_name;
 	private bool $enableCSRF;
@@ -29,12 +31,16 @@ class Api{
 		$this->pk_user = getDef($options, 'pk_user', null);
 		$this->db = new DB( getDef($options, 'db', []), $this->pk_user);
 		$this->debug = getDef($options, 'debug', false);
+		$this->override_error = getDef($options, 'override_error', true);
+		$this->show_error = getDef($options, 'show_error', false);
 		$this->enableCSRF = getDef($options, 'csrf', false);
 		$this->globalCheck = getDef($options, 'check', []);
-		if($this->debug){
+
+		if($this->override_error){
 
 			$this->_error_handler = function($errno, $errstr, $errfile = null, $errline = null, $errcontext = null){
-				$this->response->error( $errstr . ($errfile ? ("\n" . $errfile . ":" . $errline) : ''), $errno, Error::FATAL_ERROR);
+				$msg = $errstr . ($errfile ? ("\n" . $errfile . ":" . $errline) : '');
+				$this->response->error( $this->show_error ? $msg : 'Fatal Error', $errno, Error::FATAL_ERROR);
 			};
 
 			$this->_fatal_error_handler = function(){
@@ -47,14 +53,25 @@ class Api{
 					E_COMPILE_ERROR: 64
 					E_USER_ERROR: 256
 					*/
-					if( $error["type"] == E_ERROR || $error["type"] == E_PARSE || $error["type"] == E_CORE_ERROR || $error["type"] == E_COMPILE_ERROR || $error["type"] == E_USER_ERROR ) {
-						$this->response->error( $error, $error["type"], Error::FATAL_ERROR);
+					if( in_array($error["type"], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
+						$this->response->error( $this->show_error ? $error : 'Error', $error["type"], Error::FATAL_ERROR);
 					}
 				}
 			};
 
 			$this->_exception_error_handler = function($e){
-				$this->response->error(get_class($e) . " " . $e->getMessage() . "\n" . $e->getTraceAsString(), 0, Error::EXCEPTION_ERROR);
+				$exClass = get_class($e);
+				$exMsg = $e->getMessage();
+				$code = 0;
+				$type = Error::EXCEPTION_ERROR;
+				if($exClass == 'PDOException'){
+					$info = $e->errorInfo();
+					$exMsg = $info[2];
+					$code = $info[0];
+					$type = Error::PDO_ERROR;
+				}
+				$msg = $exClass . ": " . $exMsg . "\n" . $e->getTraceAsString();
+				$this->response->error($this->show_error ? $msg : 'Exception', $code, $type);
 			};
 
 			if(function_exists('xdebug_disable')) xdebug_disable();

@@ -137,7 +137,7 @@ class Route{
 	}
 	
 	private function isRegex(string $pattern): bool{
-		if($this->api->debug){
+		if($this->api->override_error){
 			set_error_handler(function(){ return true; });
 			$res = @preg_match($pattern, '') !== false;
 			set_error_handler($this->api->_error_handler);

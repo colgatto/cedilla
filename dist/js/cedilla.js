@@ -122,6 +122,10 @@ api.errorCallback = {
 		if(cedilla.DEBUG) console.error(err.message);
 		return false;
 	},
+	pdo_error: (err) => {
+		if(cedilla.DEBUG) console.error(err.message);
+		return false;
+	},
 	internal_error: (err) => {
 		if(cedilla.DEBUG) console.error(err.message);
 		return false;
@@ -154,6 +158,8 @@ const triggerGlobalError = err => {
 			return api.errorCallback.param_not_required(err);
 		case 'PARAM_INVALID':
 			return api.errorCallback.param_invalid(err);
+		case 'PDO_ERROR':
+			return api.errorCallback.pdo_error(err);
 		case 'INTERNAL_ERROR':
 			return api.errorCallback.internal_error(err);
 		case 'EXCEPTION_ERROR':

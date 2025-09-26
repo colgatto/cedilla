@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-
-//const PATH_TEMPLATILLA = path.join(__dirname, '..', '..', 'templatilla');
-const PATH_TEMPLATILLA = '/var/www/templatilla';
+const { templatilla_path } = require('./config');
 
 function rm_cp($source, $dest){
 	fs.rmSync($dest, { recursive: true, force: true });
@@ -11,17 +9,17 @@ function rm_cp($source, $dest){
 
 rm_cp(
 	path.join(__dirname, '..', 'dist', 'php', 'src'),
-	path.join(PATH_TEMPLATILLA, 'be', 'lib', 'cedilla', 'src')
+	path.join(templatilla_path, 'be', 'lib', 'cedilla', 'src')
 );
 rm_cp(
 	path.join(__dirname, '..', 'dist', 'php', 'cedilla.php'),
-	path.join(PATH_TEMPLATILLA, 'be', 'lib', 'cedilla', 'cedilla.php')
+	path.join(templatilla_path, 'be', 'lib', 'cedilla', 'cedilla.php')
 );
 rm_cp(
 	path.join(__dirname, '..', 'dist', 'js', 'cedilla.js'),
-	path.join(PATH_TEMPLATILLA, 'lib', 'templatilla', 'js', 'cedilla.js')
+	path.join(templatilla_path, 'lib', 'templatilla', 'js', 'cedilla.js')
 );
 rm_cp(
 	path.join(__dirname, '..', 'dist', 'js', 'cedilla.min.js'),
-	path.join(PATH_TEMPLATILLA, 'lib', 'templatilla', 'js', 'cedilla.min.js')
+	path.join(templatilla_path, 'lib', 'templatilla', 'js', 'cedilla.min.js')
 );
