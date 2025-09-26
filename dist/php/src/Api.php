@@ -66,8 +66,10 @@ class Api{
 				$type = Error::EXCEPTION_ERROR;
 				if($exClass == 'PDOException'){
 					$info = $e->errorInfo;
-					$exMsg = $info[2];
-					$code = $info[0];
+					if($info){
+						$exMsg = $info[2];
+						$code = $info[0];
+					}
 					$type = Error::PDO_ERROR;
 				}
 				$msg = $exClass . ": " . $exMsg . "\n" . $e->getTraceAsString();
