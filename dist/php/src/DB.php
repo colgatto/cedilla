@@ -156,9 +156,11 @@ class DB {
 						$pVal[":param_$i"] = $params[$i];
 					}
 				}else{
-					foreach ($params as $key => $value) {
-						array_push($pStr, ":$key");
-						$pVal[":$key"] = $value;
+					$i = 0;
+					foreach ($params as $value) {
+						array_push($pStr, ":$i");
+						$pVal[":$i"] = $value;
+						$i++;
 					}
 				}
 				return $this->exec("CALL $name(" . implode(',', $pStr) . ")", $pVal, $enableLog);
