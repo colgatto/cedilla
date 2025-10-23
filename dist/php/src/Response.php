@@ -28,6 +28,15 @@ class Response{
 		]));
 	}
 
+	public function debug(mixed $value=''): void{
+		header('Content-Type: application/json');
+		die(json_encode([
+			'error' => false,
+			'debug' => $value,
+			'time' => microtime(true) - $this->tstart
+		]));
+	}
+
 	public function redirect(string $location): void{
 		header('Location: ' . $location);
 		die('');
