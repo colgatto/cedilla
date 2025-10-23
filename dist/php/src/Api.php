@@ -67,8 +67,8 @@ class Api{
 				if($exClass == 'PDOException'){
 					$info = $e->errorInfo;
 					if($info){
-						$exMsg = $info[2];
-						$code = $info[0];
+						if(isset($info[2])) $exMsg = $info[2];
+						if(isset($info[0])) $code = $info[0];
 					}
 					$type = Error::PDO_ERROR;
 				}
