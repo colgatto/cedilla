@@ -46,11 +46,12 @@ const api = (route, data = {}, opt = {}) => {
 				});
 				mod.innerHTML = JSON.stringify(res.debug, null, 4);
 				const close = document.createElement('button');
+				close.classList.add('btn', 'btn-outline-secondary');
 				Object.assign(close.style, {
 					position: 'fixed',
 					'z-index': '10001',
 					top: '1rem',
-					left: '1rem'
+					right: '1rem'
 				});
 				close.innerHTML = 'X';
 				close.onclick = () => {
