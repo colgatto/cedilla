@@ -14,7 +14,8 @@ $api = new Api([
 	'override_error' => true,
 	'show_error' => true,
 	'db' => [
-		'database' => 'templatilla2',
+		'database' => 'templatilla',
+		//'database' => 'templatilla2',
 		'password' => 'root',
 		'port' => 3306
 	]

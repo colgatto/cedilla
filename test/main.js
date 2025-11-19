@@ -8,6 +8,7 @@ testRoute('route:priority', () => ç.api('route:priority') );
 testRoute('route:checkPassed', () => ç.api('route:checkPassed') );
 testRoute('route:exception', () => ç.api('route:exception') );
 testRoute('route:error', () => ç.api('route:error') );
+testRoute('route:debug', () => ç.api('route:debug') );
 
 test('db:select', (id) => {
 	ç.api('db:select').then( res => {

@@ -29,6 +29,38 @@ const api = (route, data = {}, opt = {}) => {
 				if( !triggerGlobalError(res.error) ){
 					reject(res.error);
 				}
+			}else if(res.log){
+				console.log(res.log);
+			}else if(res.debug){
+				const mod = document.createElement('pre');
+				Object.assign(mod.style, {
+					width: '100%',
+					height: '100%',
+					'z-index': '10000',
+					position: 'fixed',
+					top: 0,
+					background: '#1a1a1aed',
+					color: '#fff',
+					margin: '0 auto',
+					display: 'flex',
+					'justify-content': 'center',
+					'padding-top': '1rem',
+				});
+				mod.innerHTML = JSON.stringify(res.debug, null, 4);
+				const close = document.createElement('button');
+				Object.assign(close.style, {
+					position: 'fixed',
+					'z-index': '10001',
+					top: '1rem',
+					left: '1rem'
+				});
+				close.innerHTML = 'X';
+				close.onclick = () => {
+					mod.remove();
+					close.remove();
+				};
+				document.body.append(mod);
+				document.body.append(close);
 			}else{
 				resolve(res.response);
 			}

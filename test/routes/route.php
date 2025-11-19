@@ -41,4 +41,9 @@ $api->route('exception')
 	return 'ok';
 });
 
+$api->route('debug')
+->do(function($p, $matches){
+	$this->response->debug($this);
+});
+
 ?>
