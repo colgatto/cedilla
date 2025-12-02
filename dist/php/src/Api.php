@@ -20,6 +20,8 @@ class Api{
 	private array $_current_route_data;
 	private string $_current_route_name;
 	private bool $enableCSRF;
+	private bool $isExternal;
+	private ?string $externalToken;
 	private ?int $pk_user;
 	public Response $response;
 	public DB $db;
@@ -34,6 +36,8 @@ class Api{
 		$this->override_error = getDef($options, 'override_error', true);
 		$this->show_error = getDef($options, 'show_error', false);
 		$this->enableCSRF = getDef($options, 'csrf', false);
+		$this->isExternal = getDef($options, 'external', false);
+		$this->externalToken = getDef($options, 'token', null);
 		$this->globalCheck = getDef($options, 'check', []);
 
 		if($this->override_error){
@@ -95,6 +99,7 @@ class Api{
 			'check' => [],
 			'priority' => 0,
 			'csrf' => $this->enableCSRF,
+			'external' => $this->isExternal,
 			'filepath' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]['file'],
 			'db' => false
 		];
@@ -125,6 +130,10 @@ class Api{
 	}
 	public function csrf(bool $value): Api{
 		$this->_current_route_data['csrf'] = $value;
+		return $this;
+	}
+	public function external(bool $value): Api{
+		$this->_current_route_data['external'] = $value;
 		return $this;
 	}
 	public function db(bool | array $value): Api{
@@ -179,7 +188,9 @@ class Api{
 
 		$route = $this->findPossibleRoute( $_GET['_cedilla_route'] );
 
-		if($route->getCSRF() && !Security::checkCRSF()){
+		if($route->getExternal() && !Security::checkToken()){
+			$this->response->error("invalid token", 'token', Error::INTERNAL_ERROR);
+		}else if($route->getCSRF() && !Security::checkCRSF()){
 			$this->response->error("CSRF not passed", 'csrf', Error::INTERNAL_ERROR);
 		}
 

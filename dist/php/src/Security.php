@@ -4,10 +4,15 @@ namespace cedilla;
 
 class Security {
 
+	public static function checkToken(): bool{
+		$headToken = self::getTokenHeader();
+		return !is_null($headToken) && !empty($headToken) && defined('API_TOKEN') && !is_null(API_TOKEN) && !empty(API_TOKEN) && $headToken == API_TOKEN;
+	}
+
 	public static function checkCRSF(): bool{
 		$headToken = self::getCRSFHeader();
 		$sessionToken = self::getCSRF();
-		return !is_null($headToken) && !empty($headToken) && !is_null($sessionToken) && !empty($sessionToken) && $headToken == $sessionToken;
+		return !is_null($headToken) && !empty($headToken) && !is_null($sessionToken) && !empty($sessionToken) && $headToken === $sessionToken;
 	}
 
 	public static function newCSRF(bool $force = false): string{
@@ -39,6 +44,13 @@ class Security {
 	private static function getCRSFHeader(): ?string{
 		foreach ( getallheaders() as $k => $v ) {
 			if (preg_match( "/^csrftoken$/i", $k )) return $v;
+		}
+		return null;
+	}
+
+	private static function getTokenHeader(): ?string{
+		foreach ( getallheaders() as $k => $v ) {
+			if (preg_match( "/^apitoken$/i", $k )) return $v;
 		}
 		return null;
 	}

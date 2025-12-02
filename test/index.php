@@ -1,4 +1,7 @@
 <?php
+	
+	define('API_TOKEN', '1234567890');
+	
 	require_once __DIR__ . '/../dist/php/cedilla.php';
 	use cedilla\Security;
 ?>

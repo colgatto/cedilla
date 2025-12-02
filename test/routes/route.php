@@ -46,4 +46,19 @@ $api->route('debug')
 	$this->response->debug($this);
 });
 
+define('API_TOKEN', '1234567890');
+
+$api->route('validExternal')
+->optional('testV', 'string', 'no value')
+->external(true)
+->do(function($p, $matches){
+	return 'valid token, testV = ' . $p['testV'];
+});
+
+$api->route('invalidExternal')
+->external(true)
+->do(function($p, $matches){
+	return 'invalid token!';
+});
+
 ?>

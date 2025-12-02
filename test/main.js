@@ -41,3 +41,29 @@ test('db:storedList', (id) => {
 		ç.dom.q(`#${id} .error`).innerHTML = JSON.stringify(err, null, 4);
 	});
 });
+
+testRoute('route:invalidExternal', () => ç.api('route:invalidExternal') );
+
+testRoute('route:validExternal', () => {
+
+	return new Promise((resolve, reject) => {
+		fetch('test/api.php?_cedilla_route=route:validExternal', {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+				'ApiToken': '1234567890'
+			},
+			body: JSON.stringify({
+				testV: 'testing oprional params'
+			})
+		}).then( res => res.json() ).then( res => {
+			if(res.error){
+				reject(res.error);
+			}else{
+				resolve(res.response);
+			}
+		});
+	});
+
+});
