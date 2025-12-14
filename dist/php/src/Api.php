@@ -188,8 +188,10 @@ class Api{
 
 		$route = $this->findPossibleRoute( $_GET['_cedilla_route'] );
 
-		if($route->getExternal() && !Security::checkToken()){
-			$this->response->error("invalid token", 'token', Error::INTERNAL_ERROR);
+		if($route->getExternal()){
+			if(!Security::checkToken()){
+				$this->response->error("invalid token", 'token', Error::INTERNAL_ERROR);
+			}
 		}else if($route->getCSRF() && !Security::checkCRSF()){
 			$this->response->error("CSRF not passed", 'csrf', Error::INTERNAL_ERROR);
 		}
