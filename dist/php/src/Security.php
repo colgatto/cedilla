@@ -1,6 +1,7 @@
 <?php
 
 namespace cedilla;
+require_once __DIR__ . '/Session.php';
 
 class Security {
 
@@ -20,8 +21,8 @@ class Security {
 			$sessionToken = self::getCSRF();
 			if(!is_null($sessionToken) && !empty($sessionToken)) return $sessionToken;
 		}
-		$_SESSION['__cedilla']['CSRFtoken'] = hash( 'sha512', bin2hex( openssl_random_pseudo_bytes( 64 ) ) );
-		return $_SESSION['__cedilla']['CSRFtoken'];
+		Session::set(['__cedilla', 'CSRFtoken'],  hash( 'sha512', bin2hex( openssl_random_pseudo_bytes( 64 ) ) ));
+		return Session::get(['__cedilla', 'CSRFtoken']);
 	}
 
 	public static function CSRFTag(): void{
@@ -32,13 +33,13 @@ class Security {
 	}
 
 	public static function getCSRF(): ?string{
-		if(!isset($_SESSION['__cedilla']) || !isset($_SESSION['__cedilla']['CSRFtoken'])) return null;
-		return $_SESSION['__cedilla']['CSRFtoken'];
+		if(!Session::isset('__cedilla') || !Session::isset(['__cedilla', 'CSRFtoken'])) return null;
+		return Session::get(['__cedilla', 'CSRFtoken']);
 	}
 
 	public static function deleteCSRF(): void{
-		if(!isset($_SESSION['__cedilla']) || !isset($_SESSION['__cedilla']['CSRFtoken'])) return;
-		unset($_SESSION['__cedilla']['CSRFtoken']);
+		if(!Session::isset('__cedilla') || !Session::isset(['__cedilla', 'CSRFtoken'])) return;
+		Session::unset(['__cedilla', 'CSRFtoken']);
 	}
 
 	private static function getCRSFHeader(): ?string{

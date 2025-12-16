@@ -1,12 +1,10 @@
 <?php
-if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
+require_once __DIR__ . '/src/Session.php';
 
-if(!isset($_SESSION['__cedilla'])){
-	$_SESSION['__cedilla'] = [
-		'CSRFtoken' => null
-	];
+use cedilla\Session;
+
+if(!Session::isset('__cedilla')){
+	Session::set(['__cedilla', 'CSRFtoken'], null);
 }
 
 function getDef(array $in, array | string $keys, mixed $def): mixed{
