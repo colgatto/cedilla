@@ -10,6 +10,16 @@ class Session{
 		}
 	}
 
+	public static function init(): void{
+		Session::start();
+		session_write_close();
+	}
+
+	public static function destroy(): void{
+		Session::start();
+		session_destroy();
+	}
+
 	public static function set(string|array $k, mixed $v): void{
 		if(!is_array($k)) $k = [$k];
 		Session::start();
@@ -28,25 +38,21 @@ class Session{
 
 	public static function get(string|array $k): mixed{
 		if(!is_array($k)) $k = [$k];
-		Session::start();
 		$o = $_SESSION;
 		for ($i = 0, $l = count($k); $i < $l; $i++) { 
 			$o = &$o[$k[$i]];
 		}
-		session_write_close();
 		return $o;
 	}
 
 	public static function isset(string|array $k): bool{
 		if(!is_array($k)) $k = [$k];
-		Session::start();
 		$o = $_SESSION;
 		$l = count($k);
 		for ($i = 0; $i < $l-1; $i++) {
 			$o = &$o[$k[$i]];
 		}
 		$is = isset($o[$k[$l-1]]);
-		session_write_close();
 		return $is;
 	}
 	
