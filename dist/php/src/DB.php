@@ -73,6 +73,16 @@ class DB {
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 				]);
 				break;
+			case DB::DB_POSTGRESS:
+				if($this->dbName){
+					$connString = 'pgsql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn;
+				}else{
+					$connString = 'pgsql:host=' . $this->host . ';port=' . $this->port . ';' . $this->dsn;
+				}
+				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
+					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+				]);
+				break;
 			default:
 				throw new Exception( 'Unknown database type: ' . $this->type );
 		}
