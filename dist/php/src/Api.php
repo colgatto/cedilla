@@ -140,6 +140,10 @@ class Api{
 		$this->_current_route_data['db'] = $value;
 		return $this;
 	}
+	public function description(string $value): Api{
+		$this->_current_route_data['description'] = $value;
+		return $this;
+	}
 
 	public function do(callable $cb): Api{
 		array_push($this->routes, new Route($this, $this->_current_route_name, $this->_current_route_data, $cb));

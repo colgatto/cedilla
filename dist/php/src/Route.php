@@ -16,6 +16,7 @@ class Route{
 	private string | bool $csrf;
 	private bool $external;
 	private string $filepath;
+	private string $description;
 	private int $priority;
 
 	public $db;
@@ -48,6 +49,7 @@ class Route{
 		$this->csrf = getDef($options, 'csrf', false);
 		$this->external = getDef($options, 'external', false);
 		$this->filepath = getDef($options, 'filepath', '');
+		$this->description = getDef($options, 'description', '');
 		$this->db = getDef($options, 'db', false);
 	}
 
@@ -68,6 +70,9 @@ class Route{
 	}
 	public function getCSRF(): bool{
 		return $this->csrf;
+	}
+	public function getDescription(): string{
+		return $this->description;
 	}
 	public function getExternal(): bool{
 		return $this->external;
