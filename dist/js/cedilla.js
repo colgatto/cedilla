@@ -409,6 +409,12 @@ dom.makeTable = (data) => {
 	});
 }
 
+dom.stringify = (el) => {
+	const tmpEl = document.createElement("div");
+	tmpEl.appendChild(el.cloneNode(true));
+	return tmpEl.innerHTML;
+};
+
 module.exports = dom;
 },{"./str":8}],6:[function(require,module,exports){
 const obj = {};
