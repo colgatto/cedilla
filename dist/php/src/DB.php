@@ -154,6 +154,7 @@ class DB {
 
 	public function stored($name, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
 		switch ($this->type) {
+			case DB::DB_POSTGRESS:
 			case DB::DB_MYSQL:
 				if(is_null($params)){
 					return $this->exec("CALL $name()", null, $enableLog);
