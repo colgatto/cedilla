@@ -46,6 +46,7 @@ class Session{
 	}
 
 	public static function isset(string|array $k): bool{
+		Session::start();
 		if(!is_array($k)) $k = [$k];
 		$o = $_SESSION;
 		$l = count($k);
