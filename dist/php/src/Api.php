@@ -65,19 +65,17 @@ class Api{
 
 			$this->_exception_error_handler = function($e){
 				$exClass = get_class($e);
-				$exMsg = $e->getMessage();
+				$msg = $e->getMessage();
 				$code = 0;
 				$type = Error::EXCEPTION_ERROR;
 				if($exClass == 'PDOException'){
-					$info = $e->errorInfo;
-					if($info){
-						if(isset($info[2])) $exMsg = $info[2];
-						if(isset($info[0])) $code = $info[0];
-					}
 					$type = Error::PDO_ERROR;
+					$info = $this->parseSqlError($msg, $e->errorInfo);
+					$msg = $info['message'];
+					$code = $info['code'];
 				}
-				$msg = $exClass . ": " . $exMsg . "\n" . $e->getTraceAsString();
-				$this->response->error($this->show_error ? $msg : 'Exception', $code, $type);
+				$info['details'] = $exClass . ": " . $msg . "\n" . $e->getTraceAsString();
+				$this->response->error($this->show_error ? $msg : 'Exception', $code, $type, $this->show_error ? $info['details'] : null);
 			};
 
 			if(function_exists('xdebug_disable')) xdebug_disable();
@@ -87,6 +85,7 @@ class Api{
 		}
 
 	}
+
 	public function getRoutes(): array{
 		return $this->routes;
 	}
@@ -148,6 +147,38 @@ class Api{
 	public function do(callable $cb): Api{
 		array_push($this->routes, new Route($this, $this->_current_route_name, $this->_current_route_data, $cb));
 		return $this;
+	}
+
+	private function parseSqlError(string $v, array $info): array{
+		$v = trim($v);
+		$data = [
+			'type' => null,
+			'code' => -1,
+			'code2' => -1,
+			'message' => $v,
+			'name' => null
+		];
+		$tmpInfo = [];
+		if(preg_match('/^SQLSTATE\[(\d+)\]: /', $v, $matches)){
+			$data['code'] = $matches[1];
+			$v = trim(substr($v, strlen($matches[0])));
+		}
+		while(preg_match('/^\[(.+?)\]/', $v, $matches)){
+			array_push($tmpInfo, $matches[1]);
+			$v = trim(substr($v, strlen($matches[0])));
+		}
+
+		if(in_array('SQL Server', $tmpInfo)){
+			$data['type'] = 'SQL Server';
+			$data['message'] = $v;
+			if(count($info) > 1) $data['code'] = $info[1];
+		}else if(preg_match('/^(.+?): (\d+) ERROR: /', $v, $matches)){
+			$data['type'] = 'PostgreSQL';
+			$data['name'] = $matches[1];
+			$data['code2'] = $matches[2];
+			$data['message'] = trim(substr($v, strlen($matches[0])));
+		}
+		return $data;
 	}
 
 	private function findPossibleRoute(string $value): Route{

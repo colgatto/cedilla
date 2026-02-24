@@ -115,51 +115,51 @@ api.raw = (route, data, opt = {}) => {
 
 api.errorCallback = {
 	default: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	route_undefined: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	route_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	check: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	param_required: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	param_not_required: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	param_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	pdo_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	internal_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	exception_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	generic_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	fatal_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 };

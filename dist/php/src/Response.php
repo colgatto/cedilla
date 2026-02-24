@@ -19,10 +19,10 @@ class Response{
 		]));
 	}
 
-	public function error(string $message = '', int | string $code = 0, string $type = Error::GENERIC_ERROR): void{
+	public function error(string $message = '', int | string $code = 0, string $type = Error::GENERIC_ERROR, ?string $details = null): void{
 		header('Content-Type: application/json');
 		die(json_encode([
-			'error' => new Error($message, $code, $type),
+			'error' => new Error($message, $code, $type, $details),
 			'response' => false,
 			'time' => microtime(true) - $this->tstart
 		]));

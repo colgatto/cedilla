@@ -22,11 +22,13 @@ class Error{
 	public null | int | string $code;
 	public string $type;
 	public string $message;
+	public ?string $details;
 
-	public function __construct(string $message = '', int | string $code = 0, string $type = Error::GENERIC_ERROR ){
+	public function __construct(string $message = '', int | string $code = 0, string $type = Error::GENERIC_ERROR, ?string $details = null){
 		$this->message = $message;
 		$this->code = $code;
 		$this->type = $type;
+		$this->details = $details;
 	}
 
 }

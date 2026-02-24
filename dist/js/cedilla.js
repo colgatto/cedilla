@@ -128,51 +128,51 @@ api.raw = (route, data, opt = {}) => {
 
 api.errorCallback = {
 	default: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	route_undefined: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	route_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	check: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	param_required: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	param_not_required: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	param_invalid: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	pdo_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	internal_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	exception_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	generic_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 	fatal_error: (err) => {
-		if(cedilla.DEBUG) console.error(err.message);
+		if(cedilla.DEBUG) console.error(err.details || err.message);
 		return false;
 	},
 };
@@ -478,7 +478,7 @@ obj.flatObj = (data) => {
 
 /**
  * Return the object with object.key equals to value searched
- * @param {object[]} objList array of object to search into.
+ * @param {object[]} objList Array of object to search within.
  * @param {string} key The key to use for match.
  * @param {any} value The value searched.
  * @return {any} The return value.
@@ -492,7 +492,7 @@ obj.getBy = (objList, key, value) => {
 
 /**
  * Return the index of object with object.key equals to value searched, -1 if not found
- * @param {object[]} objList array of object to search into.
+ * @param {object[]} objList Array of object to search within.
  * @param {string} key The key to use for match.
  * @param {any} value The value searched.
  * @return {int} The index found.
@@ -503,6 +503,19 @@ obj.getIndexBy = (objList, key, value) => {
 			return i;
 	}
 	return -1;
+};
+
+/**
+ * Return true if object has at least one of the key
+ * @param {object} obj Object to search within
+ * @param {...string} keys List of key to match
+ */
+obj.hasAny = (obj, ...keys) => {
+	const kList = Object.keys(obj);
+	for (let i = 0; i < keys.length; i++) {
+		if(kList.includes(keys[i])) return true;
+	}
+	return false;
 };
 
 module.exports = obj;
