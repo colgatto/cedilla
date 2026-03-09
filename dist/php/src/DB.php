@@ -187,6 +187,8 @@ class DB {
 					$pVal[":$key"] = $value;
 				}
 				return $this->exec("EXECUTE $name " . implode(',', $pStr), $pVal, $enableLog);
+			default:
+				throw new Exception('Invalid DB type');
 		}
 	}
 }
