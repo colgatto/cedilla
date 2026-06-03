@@ -4,9 +4,12 @@ namespace cedilla;
 
 class Session{
 
+	private static $data = null;
+
 	private static function start(): void{
 		if(session_status() == PHP_SESSION_NONE || session_status() == PHP_SESSION_DISABLED){
 			session_start();
+			Session::$data = $_SESSION;
 		}
 	}
 
@@ -33,12 +36,13 @@ class Session{
 		}
 		$oo[$k[$l-1]] = $v;
 		$_SESSION = $o;
+		Session::$data = $_SESSION;
 		session_write_close();
 	}
 
 	public static function get(string|array $k): mixed{
 		if(!is_array($k)) $k = [$k];
-		$o = $_SESSION;
+		$o = Session::$data;
 		for ($i = 0, $l = count($k); $i < $l; $i++) { 
 			$o = &$o[$k[$i]];
 		}
@@ -46,9 +50,8 @@ class Session{
 	}
 
 	public static function isset(string|array $k): bool{
-		Session::start();
 		if(!is_array($k)) $k = [$k];
-		$o = $_SESSION;
+		$o = Session::$data;
 		$l = count($k);
 		for ($i = 0; $i < $l-1; $i++) {
 			$o = &$o[$k[$i]];
@@ -70,6 +73,7 @@ class Session{
 		}
 		unset($oo[$k[$l-1]]);
 		$_SESSION = $o;
+		Session::$data = $_SESSION;
 		session_write_close();
 	}
 

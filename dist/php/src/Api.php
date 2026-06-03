@@ -149,7 +149,7 @@ class Api{
 		return $this;
 	}
 
-	private function parseSqlError(string $v, array $info): array{
+	public function parseSqlError(string $v, array $info): array{
 		$v = trim($v);
 		$data = [
 			'type' => null,
