@@ -14,7 +14,7 @@ const api = (route, data = {}, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: JSON.stringify(data)
 	};
-	
+
 	if(api.default.CSRFToken){
 		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
 	}
@@ -91,7 +91,7 @@ api.raw = (route, data, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: data
 	};
-	
+
 	if(api.default.CSRFToken){
 		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
 	}

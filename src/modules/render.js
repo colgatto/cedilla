@@ -1,5 +1,3 @@
-const sleep = async n => new Promise( r => setTimeout(r, n));
-
 class Render {
 	
 	constructor(templateName) {
