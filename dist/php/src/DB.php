@@ -45,10 +45,10 @@ class DB {
 		$this->user = getDef( $options, ['user', 'username'], 'root' );
 		$this->pass = getDef( $options, ['pass', 'password'], '' );
 		$this->dbName = getDef( $options, ['db', 'database'], false );
-		
+
 		//$this->dsn = getDef( $options, 'dsn', 'charset=utf8' );
 		$this->dsn = getDef( $options, 'dsn', '' );
-		
+
 		$this->connectionString = getDef( $options, ['connectionString', 'connectionstring'], null );
 		$this->path = getDef( $options, 'path', null );
 
@@ -65,7 +65,7 @@ class DB {
 		$this->pass = getDef( $options, ['pass', 'password'], $this->pass );
 		$this->dbName = getDef( $options, ['db', 'database'], $this->dbName );
 		$this->dsn = getDef( $options, 'dsn', $this->dsn );
-		
+
 		$this->connectionString = getDef( $options, ['connectionString', 'connectionstring'], $this->connectionString );
 		$this->path = getDef( $options, 'path', $this->path );
 

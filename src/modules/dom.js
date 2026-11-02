@@ -54,7 +54,7 @@ const dom = (tagName, options = {}) => {
 	if(typeof options.content != 'undefined'){
 		dom_append_content(options.content, el);
 	}
-	
+
 	return el;
 }
 
@@ -123,7 +123,7 @@ dom.makeTable = (data) => {
 		}
 		trows.push(row);
 	}
-	
+
 	return dom('table',{
 		content: trows
 	});

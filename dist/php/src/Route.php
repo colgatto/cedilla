@@ -5,7 +5,7 @@ namespace cedilla;
 use Closure;
 
 class Route{
-	
+
 	private Api $api;
 	private string | array $matcher;
 	private array $dataset;
@@ -98,7 +98,7 @@ class Route{
 		if( $this->matcher == $value ) return true;
 		return false;
 	}
-	
+
 	public function validateCheck(): void{
 		$fullCheck = array_merge($this->api->globalCheck, $this->check);
 		foreach ($fullCheck as $name => $cb) {
@@ -109,7 +109,7 @@ class Route{
 			}
 		}
 	}
-	
+
 	private function parseValue(string $key, mixed $v, mixed $vv): mixed{
 		if(is_bool($v)) {
 			if(!$v){

@@ -1,16 +1,16 @@
 class Render {
-	
+
 	constructor(templateName) {
-		
+
 		if(typeof window.Handlebars == 'undefined') throw new Error('Cedilla Render require Handlebars to work');
 
 		this.templateName = templateName;
 		this.template = null;
 		this.f = null;
 		this.loading = new Promise( r => r());
-		
+
 		let tDom = document.getElementById(templateName);
-		
+
 		if(tDom){
 			this.templatePath = '#';
 			this.template = tDom.innerHTML;

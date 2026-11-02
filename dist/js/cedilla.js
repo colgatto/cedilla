@@ -334,7 +334,7 @@ const dom = (tagName, options = {}) => {
 	if(typeof options.content != 'undefined'){
 		dom_append_content(options.content, el);
 	}
-	
+
 	return el;
 }
 
@@ -403,7 +403,7 @@ dom.makeTable = (data) => {
 		}
 		trows.push(row);
 	}
-	
+
 	return dom('table',{
 		content: trows
 	});
@@ -521,18 +521,18 @@ obj.hasAny = (obj, ...keys) => {
 module.exports = obj;
 },{}],7:[function(require,module,exports){
 class Render {
-	
+
 	constructor(templateName) {
-		
+
 		if(typeof window.Handlebars == 'undefined') throw new Error('Cedilla Render require Handlebars to work');
 
 		this.templateName = templateName;
 		this.template = null;
 		this.f = null;
 		this.loading = new Promise( r => r());
-		
+
 		let tDom = document.getElementById(templateName);
-		
+
 		if(tDom){
 			this.templatePath = '#';
 			this.template = tDom.innerHTML;

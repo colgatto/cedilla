@@ -7,7 +7,7 @@ require_once __DIR__ . '/Route.php';
 require_once __DIR__ . '/Error.php';
 
 class Api{
-	
+
 	public $_error_handler;
 	public array $globalCheck;
 	private $_fatal_error_handler;
@@ -24,7 +24,7 @@ class Api{
 	private ?string $externalToken;
 	public Response $response;
 	public array | DB $db;
-	
+
 	function __construct(array $options = []){
 		$this->tstart = microtime(true);
 		$this->routes = [];
@@ -205,9 +205,9 @@ class Api{
 		foreach ($this->routes as $route) {
 			if( $route->isTriggered($last_value) ) array_push($trigg, $route );
 		}
-		
+
 		if(count($trigg) == 0) $this->response->error("Route '$value' is not valid", $value, Error::ROUTE_INVALID);
-		
+
 		usort($trigg, function ($a, $b){
 			if($a->getPriority() > $b->getPriority()) return -1; 
 			if($a->getPriority() < $b->getPriority()) return 1; 
@@ -219,7 +219,7 @@ class Api{
 	}
 
 	public function server(): void{
-		
+
 		if(!isset($_GET['_cedilla_route'])){
 			$this->response->error("Must define route", 0, Error::ROUTE_UNDEFINED);
 		}
