@@ -1,5 +1,3 @@
-const str = require('./str');
-
 const dom = (tagName, options = {}) => {
 	let el = document.createElement(tagName);
 	/**
@@ -73,62 +71,32 @@ const dom_append_content = (content, el) => {
 dom.q = (query) => document.querySelector(query);
 dom.qAll = (query) => document.querySelectorAll(query);
 dom.forAll = (query, cb) => document.querySelectorAll(query).forEach( cb );
-const possibleEvents = ['abort','afterprint','animationend','animationiteration','animationstart','beforeprint','beforeunload','blur',
-	'canplay','canplaythrough','change','click','contextmenu','copy','cut','dblclick','drag','dragend','dragenter','dragleave','dragover',
-	'dragstart','drop','durationchange','ended','error','focus','focusin','focusout','fullscreenchange','fullscreenerror','hashchange',
-	'input','invalid','keydown','keypress','keyup','load','loadeddata','loadedmetadata','loadstart','message','mousedown','mouseenter',
-	'mouseleave','mousemove','mouseout','mouseover','mouseup','offline','online','open','pagehide','paste','pause','play','playing','progress',
-	'ratechange','reset','resize','scroll','search','seeked','seeking','select','show','stalled','submit','suspend','timeupdate','toggle',
-	'touchcancel','touchend','touchmove','touchstart','transitionend','unload','volumechange','waiting','wheel'
-];
-for (let i = 0; i < possibleEvents.length; i++) {
-	const ev = possibleEvents[i];
-	dom.forAll[ev] = (query, cb) => document.querySelectorAll(query).forEach( item => { item.addEventListener(ev, cb) } );
-}
-
-dom.makeTable = (data) => {
-	let header = [];
-	let rows = [];
-	if(data instanceof Array){
-		header = Object.keys(data[0]);
-		for (let i = 0; i < data.length; i++) {
-			const v = data[i];
-			rows[i] = [];
-			for (let j = 0; j < header.length; j++) {
-				rows[i][j] = v[header[j]];
-			}
+/**
+ * @public
+ * @method addEvent
+ * @param {String} eventName Event name
+ * @param {String|Element|HTMLCollection} selector DOMElement, HTMLCollection or queryselector
+ * @param {Function} cb callback to run on event
+ * @param {Boolean} useCapture A boolean value indicating whether events of this type will be dispatched to the registered listener before being dispatched to any EventTarget beneath it in the DOM tree
+ */
+dom.addEvent = (eventName, selector, cb, useCapture = false) => {
+	if(selector instanceof Element){
+		selector.addEventListener(eventName, (e) => {
+			return cb(e, selector);
+		}, useCapture);
+	}else if(selector instanceof HTMLCollection){
+		for (let i = 0; i < selector.length; i++) {
+			const el = selector[i];
+			el.addEventListener(eventName, (e) => {
+				return cb(e, el);
+			}, useCapture);
 		}
 	}else{
-		header = Object.keys(data);
-		for (let i = 0, l = data[header[0]].length; i < l; i++) {
-			rows[i] = [];
-			for (let j = 0; j < header.length; j++) {
-				const h = header[j];
-				rows[i][j] = data[h][i];
-			}
-		}
+		document.querySelectorAll(selector).forEach( el => el.addEventListener(eventName, (e) => {
+			return cb(e, el);
+		}, useCapture));
 	}
-
-	let thead = cedilla.dom('tr');
-	for (let i = 0; i < header.length; i++) {
-		thead.append( dom('th', str.titled(header[i]) ) );
-	}
-
-	let trows = [ thead ];
-	for (let i = 0; i < rows.length; i++) {
-		let row = dom('tr');
-		for (let j = 0; j < rows[i].length; j++) {
-			//console.log(rows[i][j]);
-			row.append(dom('td', rows[i][j]));
-		}
-		trows.push(row);
-	}
-
-	return dom('table',{
-		content: trows
-	});
-}
-
+};
 dom.stringify = (el) => {
 	const tmpEl = document.createElement("div");
 	tmpEl.appendChild(el.cloneNode(true));
