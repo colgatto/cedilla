@@ -9,77 +9,118 @@ use \Exception;
 class DB {
 
 	const DB_MYSQL = 'Mysql';
-	const DB_OCI = 'Oracle';
+	const MYSQL_DEFAULT_PORT = 3306;
+	const DB_ORACLE = 'Oracle';
+	const ORACLE_DEFAULT_PORT = 1521;
 	const DB_POSTGRESS = 'Postgres';
+	const POSTGRESS_DEFAULT_PORT = 5432;
+
 	const DB_SQLITE = 'Sqlite';
 	const DB_MSSQL = 'Sqlserver';
+	const MSSQL_DEFAULT_PORT = 1433;
 	const DB_DB2 = 'Db2';
+	const DB2_DEFAULT_PORT = 50000;
 	const DB_FIREBIRD = 'Firebird';
+	const FIREBIRD_DEFAULT_PORT = 3050;
 
 	private string | false $dbName;
 	private string $user;
 	private string $pass;
 	private string $host;
-	private int $port;
+	private ?int $port;
 	private string $type;
 	private string $dsn;
+	private ?string $connectionString;
+	private ?string $path;
 	private bool $inTrans;
-	private ?int $pk_user;
-	public PDO $pdo;
+	public ?PDO $pdo;
 	private PDOStatement $lastStmt;
 	public bool $enableLog;
 
-	public function __construct( $options, $pk_user = null ) {
-		$this->pk_user = $pk_user;
-		$this->dbName = getDef( $options, ['db', 'database'], false );
-		$this->user = getDef( $options, ['user', 'username'], 'root' );
-		$this->pass = getDef( $options, ['pass', 'password'], '' );
+	public function __construct( $options ) {
+
+		$this->type = getDef( $options, 'type', DB::DB_MYSQL );
 		$this->host = getDef( $options, ['host', 'hostname'], '127.0.0.1' );
 		$this->port = getDef( $options, 'port', null );
-		$this->type = getDef( $options, 'type', DB::DB_MYSQL );
-		$this->dsn = getDef( $options, 'dsn', 'charset=utf8' );
+		$this->user = getDef( $options, ['user', 'username'], 'root' );
+		$this->pass = getDef( $options, ['pass', 'password'], '' );
+		$this->dbName = getDef( $options, ['db', 'database'], false );
+		
+		//$this->dsn = getDef( $options, 'dsn', 'charset=utf8' );
+		$this->dsn = getDef( $options, 'dsn', '' );
+		
+		$this->connectionString = getDef( $options, ['connectionString', 'connectionstring'], null );
+		$this->path = getDef( $options, 'path', null );
+
 		$this->enableLog = getDef( $options, ['log', 'enableLog'], false );
 		$this->inTrans = false;
+		$this->pdo = null;
 	}
 
 	public function connect( $options = [] ): PDO{
-		$this->dbName = getDef( $options, ['db', 'database'], $this->dbName );
-		$this->user = getDef( $options, ['user', 'username'], $this->user );
-		$this->pass = getDef( $options, ['pass', 'password'], $this->pass );
+		$this->type = getDef( $options, 'type', $this->type );
 		$this->host = getDef( $options, ['host', 'hostname'], $this->host );
 		$this->port = getDef( $options, 'port', $this->port );
-		$this->type = getDef( $options, 'type', $this->type );
+		$this->user = getDef( $options, ['user', 'username'], $this->user );
+		$this->pass = getDef( $options, ['pass', 'password'], $this->pass );
+		$this->dbName = getDef( $options, ['db', 'database'], $this->dbName );
 		$this->dsn = getDef( $options, 'dsn', $this->dsn );
+		
+		$this->connectionString = getDef( $options, ['connectionString', 'connectionstring'], $this->connectionString );
+		$this->path = getDef( $options, 'path', $this->path );
 
 		switch ($this->type) {
 			case DB::DB_MYSQL:
-				if($this->dbName){
-					$connString = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn;
+				if(!$this->port) $this->port = DB::MYSQL_DEFAULT_PORT;
+				if($this->connectionString){
+					$connString = $this->connectionString;
+				}elseif($this->dbName){
+					$connString = "mysql:host={$this->host};port={$this->port};dbname={$this->dbName};{$this->dsn}";
 				}else{
-					$connString = 'mysql:host=' . $this->host . ';port=' . $this->port . ';' . $this->dsn;
+					$connString = "mysql:host={$this->host};port={$this->port};{$this->dsn}";
 				}
 				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
 					PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_ALL_TABLES'",
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 				]);
 				break;
+			case DB::DB_SQLITE:
+				$this->pdo = new PDO("sqlite:{$this->dbName}");
+				break;
 			case DB::DB_MSSQL:
-				if($this->dbName){
-					$connString = 'sqlsrv:Server=' . $this->host . ';Database=' . $this->dbName . ';' . $this->dsn;
+				if(!$this->port) $this->port = DB::MSSQL_DEFAULT_PORT;
+				if($this->connectionString){
+					$connString = $this->connectionString;
+				}elseif($this->dbName){
+					$connString = "sqlsrv:Server={$this->host}, {$this->port};Database={$this->dbName};{$this->dsn}";
 				}else{
-					$connString = 'sqlsrv:Server=' . $this->host . ';' . $this->dsn;
+					$connString = "sqlsrv:Server={$this->host}, {$this->port};{$this->dsn}";
 				}
 				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 				]);
 				break;
 			case DB::DB_POSTGRESS:
-				if($this->dbName){
-					$connString = 'pgsql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName . ';' . $this->dsn;
+				if(!$this->port) $this->port = DB::POSTGRESS_DEFAULT_PORT;
+				if($this->connectionString){
+					$connString = $this->connectionString;
+				}elseif($this->dbName){
+					$connString = "pgsql:host={$this->host};port={$this->port};dbname={$this->dbName};{$this->dsn}";
 				}else{
-					$connString = 'pgsql:host=' . $this->host . ';port=' . $this->port . ';' . $this->dsn;
+					$connString = "pgsql:host={$this->host};port={$this->port};{$this->dsn}";
 				}
 				$this->pdo = new PDO( $connString, $this->user, $this->pass, [
+					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+				]);
+				break;
+			case DB::DB_ORACLE:
+				if(!$this->port) $this->port = DB::ORACLE_DEFAULT_PORT;
+				if($this->connectionString){
+					$connString = $this->connectionString;
+				}else{
+					$connString = "oci:dbname=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$this->host})(PORT = {$this->port})) (CONNECT_DATA = (SERVICE_NAME = orcl) (SID = orcl)));{$this->dsn}";
+				}
+				$this->pdo = new PDO($connString, $this->user, $this->pass, [
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 				]);
 				break;
@@ -111,37 +152,15 @@ class DB {
 
 	public function exec(string $sql, ?array $params = null, ?bool $enableLog = null ): PDOStatement | false{
 		$this->lastStmt = $this->pdo->prepare( $sql );
-
-		if(is_null($enableLog)) $enableLog = $this->enableLog;
-
-		if($enableLog){
-			$logStmt = $this->pdo->prepare( "INSERT INTO auditing(query, params, fk_users, status) values(:query, :params, :fk_users, 0)");
-			$logStmt->execute( [
-				':query' => $sql,
-				':params' => $params ? json_encode($params) : null,
-				':fk_users' => $this->pk_user
-			] );
-			$logId = $this->lastPk();
-			try{
-				$this->lastStmt->execute( $params );
-				$this->pdo->prepare( "UPDATE auditing SET status = 1 WHERE pk = :pk")->execute( [
-					':pk' => $logId
-				]);
-			}catch(\PDOException $e){
-				$this->pdo->prepare( "UPDATE auditing SET status = -1, exception = :exception WHERE pk = :pk")->execute( [
-					':exception' => $e->getMessage(),
-					':pk' => $logId
-				]);
-				throw $e;
-			}
-		}else{
-			$this->lastStmt->execute( $params );
-		}
-
+		$this->lastStmt->execute( $params );
 		return $this->lastStmt;
 	}
 	public function name(): string{
 		return $this->dbName;
+	}
+
+	public function dbType(): string{
+		return $this->type;
 	}
 
 	public function lastPk(): string | false{
@@ -176,6 +195,7 @@ class DB {
 				}
 				return $this->exec("CALL $name(" . implode(',', $pStr) . ")", $pVal, $enableLog);
 
+			case DB::DB_ORACLE:
 			case DB::DB_MSSQL:
 				if(is_null($params)){
 					return $this->exec("EXECUTE $name", null, $enableLog);
