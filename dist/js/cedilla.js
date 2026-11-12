@@ -361,6 +361,7 @@ obj.recAssign = ( object, ...toassign ) => {
 	};
 	const mergeInObject = ( dest, data ) => {
 		Object.keys( data ).forEach( key => {
+			if(['__proto__', 'constructor', 'prototype'].includes(key)) return;
 			assign( dest, key, data[key] );
 		});
 	};
