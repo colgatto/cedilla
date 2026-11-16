@@ -445,29 +445,42 @@ module.exports = obj;
 },{}],5:[function(require,module,exports){
 class Render {
 
-	constructor(templateName, template = null) {
+	constructor(templateName, templateOrF = null) {
 
 		if(typeof window.Handlebars == 'undefined') throw new Error('Cedilla Render require Handlebars to work');
 
+		if(render.default.check_handlebars_template && window.Handlebars.templates && window.Handlebars.templates[templateName]){
+			this.f = window.Handlebars.templates[templateName];
+			window.console.log({f: templateName});
+			return;
+		}
+
 		this.templateName = templateName;
-		this.template = template;
 		this.f = null;
-		this.templatePath = null;
+		this.template = null;
 		this.loading = new Promise( r => r());
 
-		if(this.template) {
+		if(typeof templateOrF === 'function') {
+			this.f = templateOrF;
+			window.console.log({function: templateName});
+			return;
+		}
+		if(typeof templateOrF === 'string') {
+			this.template = templateOrF;
+			window.console.log({string: templateName});
 			this._compile();
 			return;
 		}
 
+		window.console.log({dom: templateName});
 		let tDom = document.getElementById(templateName);
-
 		if(tDom){
 			this.templatePath = '#';
 			this.template = tDom.innerHTML;
 			this._compile();
 			return;
 		}
+
 		this.templatePath = render.default.templates_dir + '/' + templateName + '.hbs';
 		this.loading = fetch(this.templatePath, {
 			mode: 'same-origin',
@@ -514,7 +527,8 @@ render.load = (templateName, template) => {
 
 render.default = {
 	templates_dir: 'templates',
-}
+	check_handlebars_template: true
+};
 
 module.exports = render;
 
