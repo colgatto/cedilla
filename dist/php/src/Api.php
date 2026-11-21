@@ -7,7 +7,7 @@ require_once __DIR__ . '/Route.php';
 require_once __DIR__ . '/Error.php';
 
 class Api{
-	
+
 	public $_error_handler;
 	public array $globalCheck;
 	private $_fatal_error_handler;
@@ -22,16 +22,14 @@ class Api{
 	private bool $enableCSRF;
 	private bool $isExternal;
 	private ?string $externalToken;
-	private ?int $pk_user;
 	public Response $response;
-	public DB $db;
-	
+	public array | DB $db;
+
 	function __construct(array $options = []){
 		$this->tstart = microtime(true);
 		$this->routes = [];
 		$this->response = new Response($this->tstart);
-		$this->pk_user = getDef($options, 'pk_user', null);
-		$this->db = new DB( getDef($options, 'db', []), $this->pk_user);
+		$this->db = new DB( getDef($options, 'db', []) );
 		$this->debug = getDef($options, 'debug', false);
 		$this->override_error = getDef($options, 'override_error', true);
 		$this->show_error = getDef($options, 'show_error', false);
@@ -100,12 +98,13 @@ class Api{
 			'csrf' => $this->enableCSRF,
 			'external' => $this->isExternal,
 			'filepath' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]['file'],
-			'db' => false
+			'db' => false,
+			'addDb' => []
 		];
 		return $this;
 	}
 
-	public function optional(string $key, string $val, mixed $default = null): Api{
+	public function optional(string $key, string | array $val, mixed $default = null): Api{
 		$args = func_get_args();
 		$this->_current_route_data['optional'][$key] = count($args) == 2 ? [
 			'val' => $val
@@ -139,6 +138,10 @@ class Api{
 		$this->_current_route_data['db'] = $value;
 		return $this;
 	}
+	public function addDb(array $value): Api{
+		$this->_current_route_data['addDb'] = $value;
+		return $this;
+	}
 	public function description(string $value): Api{
 		$this->_current_route_data['description'] = $value;
 		return $this;
@@ -149,7 +152,7 @@ class Api{
 		return $this;
 	}
 
-	public function parseSqlError(string $v, array $info): array{
+	public function parseSqlError(string $v, ?array $info): array{
 		$v = trim($v);
 		$data = [
 			'type' => null,
@@ -171,7 +174,7 @@ class Api{
 		if(in_array('SQL Server', $tmpInfo)){
 			$data['type'] = 'SQL Server';
 			$data['message'] = $v;
-			if(count($info) > 1) $data['code'] = $info[1];
+			//if(count($info) > 1) $data['code'] = $info[1];
 		}else if(preg_match('/^(.+?): (\d+) ERROR: /', $v, $matches)){
 			$data['type'] = 'PostgreSQL';
 			$data['name'] = $matches[1];
@@ -202,9 +205,9 @@ class Api{
 		foreach ($this->routes as $route) {
 			if( $route->isTriggered($last_value) ) array_push($trigg, $route );
 		}
-		
+
 		if(count($trigg) == 0) $this->response->error("Route '$value' is not valid", $value, Error::ROUTE_INVALID);
-		
+
 		usort($trigg, function ($a, $b){
 			if($a->getPriority() > $b->getPriority()) return -1; 
 			if($a->getPriority() < $b->getPriority()) return 1; 
@@ -216,7 +219,7 @@ class Api{
 	}
 
 	public function server(): void{
-		
+
 		if(!isset($_GET['_cedilla_route'])){
 			$this->response->error("Must define route", 0, Error::ROUTE_UNDEFINED);
 		}
@@ -249,10 +252,26 @@ class Api{
 		}
 		$route->validateCheck();
 
-		if(is_array($route->db)){
-			$this->db->connect($route->db);
-		}elseif($route->db){
+		$db = $this->_current_route_data['db'];
+		$addDb = $this->_current_route_data['addDb'];
+
+		if(is_array($db)){
+			$this->db->connect($db);
+		}elseif($db){
 			$this->db->connect();
+		}
+
+		if(count($addDb) > 0){
+			if(!$this->db->pdo){
+				$this->db->connect();
+			}
+			$default = $this->db;
+			$this->db = [];
+			$this->db['default'] = $default;
+			foreach ($addDb as $name => $dbData) {
+				$this->db[$name] = new DB( $dbData );
+				$this->db[$name]->connect();
+			}
 		}
 
 		$this->response->done( $route->exec() );

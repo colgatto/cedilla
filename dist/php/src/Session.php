@@ -59,7 +59,7 @@ class Session{
 		$is = isset($o[$k[$l-1]]);
 		return $is;
 	}
-	
+
 	public static function unset(string|array $k): void{
 		if(!is_array($k)) $k = [$k];
 		Session::start();

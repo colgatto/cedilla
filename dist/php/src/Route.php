@@ -2,14 +2,16 @@
 
 namespace cedilla;
 
+use Closure;
+
 class Route{
-	
+
 	private Api $api;
 	private string | array $matcher;
 	private array $dataset;
 	private array $args;
 	private ?string $raw;
-	private $cb;
+	private Closure $cb;
 	private array $require;
 	private array $optional;
 	private array $check;
@@ -19,7 +21,8 @@ class Route{
 	private string $description;
 	private int $priority;
 
-	public $db;
+	//public $db;
+	//public $addDb;
 
 	const PARAM_STRING = 'string';
 	const PARAM_BOOL = 'bool';
@@ -50,7 +53,8 @@ class Route{
 		$this->external = getDef($options, 'external', false);
 		$this->filepath = getDef($options, 'filepath', '');
 		$this->description = getDef($options, 'description', '');
-		$this->db = getDef($options, 'db', false);
+		//$this->db = getDef($options, 'db', false);
+		//$this->addDb = getDef($options, 'addDb', []);
 	}
 
 	public function getMatcher(): string | array{
@@ -64,6 +68,9 @@ class Route{
 	}
 	public function getCheck(): array{
 		return $this->check;
+	}
+	public function getCb(): Closure{
+		return $this->cb;
 	}
 	public function getPriority(): int{
 		return $this->priority;
@@ -91,7 +98,7 @@ class Route{
 		if( $this->matcher == $value ) return true;
 		return false;
 	}
-	
+
 	public function validateCheck(): void{
 		$fullCheck = array_merge($this->api->globalCheck, $this->check);
 		foreach ($fullCheck as $name => $cb) {
@@ -102,7 +109,7 @@ class Route{
 			}
 		}
 	}
-	
+
 	private function parseValue(string $key, mixed $v, mixed $vv): mixed{
 		if(is_bool($v)) {
 			if(!$v){
@@ -126,8 +133,8 @@ class Route{
 
 	public function appendOptional(array $data) : void{
 		foreach ($this->optional as $key => $v) {
-			if(!isset($data[$key])) {
-				//isset() non conta null come valore
+			//isset() non conta null come valore
+			if(!array_key_exists($key, $data)) {
 				if(!array_key_exists('default', $v)) continue;
 				$data[$key] = $v['default'];
 			}
@@ -145,7 +152,7 @@ class Route{
 	public function exec(): mixed{
 		return $this->cb->bindTo($this->api)($this->raw ? $this->raw : $this->args, $this->dataset);
 	}
-	
+
 	private function isRegex(string $pattern): bool{
 		if($this->api->override_error){
 			set_error_handler(function(){ return true; });

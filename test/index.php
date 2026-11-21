@@ -1,7 +1,7 @@
 <?php
-	
+
 	define('API_TOKEN', '1234567890');
-	
+
 	require_once __DIR__ . '/../dist/php/cedilla.php';
 	use cedilla\Security;
 ?>
@@ -18,7 +18,7 @@
 			max-width: 1440px;
 			margin: 0 auto;
 		}
-		
+
 		.response,
 		.error{
 			width: 100%;

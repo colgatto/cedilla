@@ -1,5 +1,7 @@
 <?php
 
+define('CUSTOM_APACHE_LOG', false);
+
 require_once __DIR__ . '/../dist/php/cedilla.php';
 
 use cedilla\Api;

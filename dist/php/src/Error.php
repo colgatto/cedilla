@@ -12,7 +12,7 @@ class Error{
 	const PARAM_INVALID = 'PARAM_INVALID';
 
 	const PDO_ERROR = 'PDO_ERROR';
-	
+
 	const INTERNAL_ERROR = 'INTERNAL_ERROR';
 	const GENERIC_ERROR = 'GENERIC_ERROR';
 

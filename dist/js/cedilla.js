@@ -3,14 +3,11 @@ window.cedilla = {
 	api: require('./modules/api'),
 	dom: require('./modules/dom'),
 	obj: require('./modules/obj'),
-	str: require('./modules/str'),
-	arr: require('./modules/arr'),
-	cookies: require('./modules/cookies'),
 	render: require('./modules/render'),
 	DEBUG: false
 };
 window.ç = window.cedilla;
-},{"./modules/api":2,"./modules/arr":3,"./modules/cookies":4,"./modules/dom":5,"./modules/obj":6,"./modules/render":7,"./modules/str":8}],2:[function(require,module,exports){
+},{"./modules/api":2,"./modules/dom":3,"./modules/obj":4,"./modules/render":5}],2:[function(require,module,exports){
 
 const def = (options, key) => options[key] || api.default[key];
 
@@ -27,7 +24,7 @@ const api = (route, data = {}, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: JSON.stringify(data)
 	};
-	
+
 	if(api.default.CSRFToken){
 		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
 	}
@@ -59,7 +56,7 @@ const api = (route, data = {}, opt = {}) => {
 					'justify-content': 'center',
 					'padding-top': '1rem',
 				});
-				mod.innerHTML = JSON.stringify(res.debug, null, 4);
+				mod.textContent = JSON.stringify(res.debug, null, 4);
 				const close = document.createElement('button');
 				close.classList.add('btn', 'btn-outline-secondary');
 				Object.assign(close.style, {
@@ -68,7 +65,7 @@ const api = (route, data = {}, opt = {}) => {
 					top: '1rem',
 					right: '1rem'
 				});
-				close.innerHTML = 'X';
+				close.textContent = 'X';
 				close.onclick = () => {
 					mod.remove();
 					close.remove();
@@ -104,7 +101,7 @@ api.raw = (route, data, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: data
 	};
-	
+
 	if(api.default.CSRFToken){
 		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
 	}
@@ -207,51 +204,6 @@ const triggerGlobalError = err => {
 
 module.exports = api;
 },{}],3:[function(require,module,exports){
-const arr = {};
-arr.pickRandom = (array) => array[Math.floor(Math.random() * array.length)];
-
-module.exports = arr;
-},{}],4:[function(require,module,exports){
-
-const cookies = {
-	default: {
-		expiration_time: 24 * 60 * 60 * 1000 // 1 DAY
-	}
-};
-
-cookies.setCookie = (c_name, c_val, ex_time = null, timeInSecond = false) => {
-	let d = new Date();
-	d.setTime( d.getTime() + (
-		ex_time ? ( timeInSecond ? ex_time * 1000 : ex_time * 24 * 60 * 60 * 1000 )
-			: cookies.default.expiration_time
-	));
-	let expires = "expires="+d.toUTCString();
-	document.cookie = c_name + "=" + c_val + ";" + expires + ";path=/";
-};
-
-cookies.getCookie = (c_name) => {
-	let name = c_name + "=";
-	let ca = document.cookie.split(';');
-	for(let i = 0; i < ca.length; i++) {
-		let c = ca[i];
-		while (c.charAt(0) == ' ') {
-			c = c.substring(1);
-		}
-		if (c.indexOf(name) == 0) {
-			return c.substring(name.length, c.length);
-		}
-	}
-	return "";
-};
-
-cookies.deleteCookie = (c_name) => {
-	document.cookie = c_name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
-};
-
-module.exports = cookies;
-},{}],5:[function(require,module,exports){
-const str = require('./str');
-
 const dom = (tagName, options = {}) => {
 	let el = document.createElement(tagName);
 	/**
@@ -306,7 +258,7 @@ const dom = (tagName, options = {}) => {
 	if(typeof options.content != 'undefined'){
 		dom_append_content(options.content, el);
 	}
-	
+
 	return el;
 }
 
@@ -325,62 +277,32 @@ const dom_append_content = (content, el) => {
 dom.q = (query) => document.querySelector(query);
 dom.qAll = (query) => document.querySelectorAll(query);
 dom.forAll = (query, cb) => document.querySelectorAll(query).forEach( cb );
-const possibleEvents = ['abort','afterprint','animationend','animationiteration','animationstart','beforeprint','beforeunload','blur',
-	'canplay','canplaythrough','change','click','contextmenu','copy','cut','dblclick','drag','dragend','dragenter','dragleave','dragover',
-	'dragstart','drop','durationchange','ended','error','focus','focusin','focusout','fullscreenchange','fullscreenerror','hashchange',
-	'input','invalid','keydown','keypress','keyup','load','loadeddata','loadedmetadata','loadstart','message','mousedown','mouseenter',
-	'mouseleave','mousemove','mouseout','mouseover','mouseup','offline','online','open','pagehide','paste','pause','play','playing','progress',
-	'ratechange','reset','resize','scroll','search','seeked','seeking','select','show','stalled','submit','suspend','timeupdate','toggle',
-	'touchcancel','touchend','touchmove','touchstart','transitionend','unload','volumechange','waiting','wheel'
-];
-for (let i = 0; i < possibleEvents.length; i++) {
-	const ev = possibleEvents[i];
-	dom.forAll[ev] = (query, cb) => document.querySelectorAll(query).forEach( item => { item.addEventListener(ev, cb) } );
-}
-
-dom.makeTable = (data) => {
-	let header = [];
-	let rows = [];
-	if(data instanceof Array){
-		header = Object.keys(data[0]);
-		for (let i = 0; i < data.length; i++) {
-			const v = data[i];
-			rows[i] = [];
-			for (let j = 0; j < header.length; j++) {
-				rows[i][j] = v[header[j]];
-			}
+/**
+ * @public
+ * @method addEvent
+ * @param {String} eventName Event name
+ * @param {String|Element|HTMLCollection} selector DOMElement, HTMLCollection or queryselector
+ * @param {Function} cb callback to run on event
+ * @param {Boolean} useCapture A boolean value indicating whether events of this type will be dispatched to the registered listener before being dispatched to any EventTarget beneath it in the DOM tree
+ */
+dom.addEvent = (eventName, selector, cb, useCapture = false) => {
+	if(selector instanceof Element){
+		selector.addEventListener(eventName, (e) => {
+			return cb(e, selector);
+		}, useCapture);
+	}else if(selector instanceof HTMLCollection){
+		for (let i = 0; i < selector.length; i++) {
+			const el = selector[i];
+			el.addEventListener(eventName, (e) => {
+				return cb(e, el);
+			}, useCapture);
 		}
 	}else{
-		header = Object.keys(data);
-		for (let i = 0, l = data[header[0]].length; i < l; i++) {
-			rows[i] = [];
-			for (let j = 0; j < header.length; j++) {
-				const h = header[j];
-				rows[i][j] = data[h][i];
-			}
-		}
+		document.querySelectorAll(selector).forEach( el => el.addEventListener(eventName, (e) => {
+			return cb(e, el);
+		}, useCapture));
 	}
-
-	let thead = cedilla.dom('tr');
-	for (let i = 0; i < header.length; i++) {
-		thead.append( dom('th', str.titled(header[i]) ) );
-	}
-
-	let trows = [ thead ];
-	for (let i = 0; i < rows.length; i++) {
-		let row = dom('tr');
-		for (let j = 0; j < rows[i].length; j++) {
-			//console.log(rows[i][j]);
-			row.append(dom('td', rows[i][j]));
-		}
-		trows.push(row);
-	}
-	
-	return dom('table',{
-		content: trows
-	});
-}
-
+};
 dom.stringify = (el) => {
 	const tmpEl = document.createElement("div");
 	tmpEl.appendChild(el.cloneNode(true));
@@ -388,7 +310,7 @@ dom.stringify = (el) => {
 };
 
 module.exports = dom;
-},{"./str":8}],6:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 const obj = {};
 
 /**
@@ -411,6 +333,7 @@ obj.recAssign = ( object, ...toassign ) => {
 	};
 	const mergeInObject = ( dest, data ) => {
 		Object.keys( data ).forEach( key => {
+			if(['__proto__', 'constructor', 'prototype'].includes(key)) return;
 			assign( dest, key, data[key] );
 		});
 	};
@@ -491,22 +414,32 @@ obj.hasAny = (obj, ...keys) => {
 };
 
 module.exports = obj;
-},{}],7:[function(require,module,exports){
-const sleep = async n => new Promise( r => setTimeout(r, n));
-
+},{}],5:[function(require,module,exports){
 class Render {
-	
-	constructor(templateName, template = null) {
-		
+
+	constructor(templateName, templateOrF = null) {
+
 		if(typeof window.Handlebars == 'undefined') throw new Error('Cedilla Render require Handlebars to work');
 
+		if(render.default.check_handlebars_template && window.Handlebars.templates && window.Handlebars.templates[templateName]){
+			this.f = window.Handlebars.templates[templateName];
+			window.console.log({f: templateName});
+			return;
+		}
+
 		this.templateName = templateName;
-		this.template = template;
 		this.f = null;
-		this.templatePath = null;
+		this.template = null;
 		this.loading = new Promise( r => r());
 
-		if(this.template) {
+		if(typeof templateOrF === 'function') {
+			this.f = templateOrF;
+			window.console.log({function: templateName});
+			return;
+		}
+		if(typeof templateOrF === 'string') {
+			this.template = templateOrF;
+			window.console.log({string: templateName});
 			this._compile();
 			return;
 		}
@@ -565,35 +498,9 @@ render.load = (templateName, template) => {
 
 render.default = {
 	templates_dir: 'templates',
-}
+	check_handlebars_template: true
+};
 
 module.exports = render;
 
-},{}],8:[function(require,module,exports){
-
-const str = {};
-
-str.firstUp = (v, forceLower = false) => v.slice(0,1).toUpperCase() + ( forceLower ? v.slice(1).toLowerCase() : v.slice(1) );
-
-str.titled = (v, forceLower = false, separators = ['_', ':']) => {
-	let lastC = '';
-	let newV = '';
-	for (let i = 0; i < v.length; i++) {
-		let c = v[i];
-		if(separators.includes(c)) c = ' ';
-		if( ( i == 0 || lastC.match(/^\s$/) ) && c >= 'a' && c <= 'z' ) {
-			c = c.toUpperCase();
-		}else if( forceLower && ( i != 0 && lastC.match(/^\S$/) ) && c >= 'A' && c <= 'Z'){
-			c = c.toLowerCase();
-		}
-		newV += c;
-		lastC = c;
-	}
-	return newV;
-}
-
-str.htmlStrip = v => (new DOMParser()).parseFromString(v,'text/html').body.textContent;
-str.htmlEscape = v => v.replace(/&/g, "&amp;").replace(/'/g, '&#39;').replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-
-module.exports = str;
 },{}]},{},[1]);

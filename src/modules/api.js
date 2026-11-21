@@ -14,7 +14,7 @@ const api = (route, data = {}, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: JSON.stringify(data)
 	};
-	
+
 	if(api.default.CSRFToken){
 		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
 	}
@@ -46,7 +46,7 @@ const api = (route, data = {}, opt = {}) => {
 					'justify-content': 'center',
 					'padding-top': '1rem',
 				});
-				mod.innerHTML = JSON.stringify(res.debug, null, 4);
+				mod.textContent = JSON.stringify(res.debug, null, 4);
 				const close = document.createElement('button');
 				close.classList.add('btn', 'btn-outline-secondary');
 				Object.assign(close.style, {
@@ -55,7 +55,7 @@ const api = (route, data = {}, opt = {}) => {
 					top: '1rem',
 					right: '1rem'
 				});
-				close.innerHTML = 'X';
+				close.textContent = 'X';
 				close.onclick = () => {
 					mod.remove();
 					close.remove();
@@ -91,7 +91,7 @@ api.raw = (route, data, opt = {}) => {
 		credentials: def(opt, 'fetch_credentials'), 
 		body: data
 	};
-	
+
 	if(api.default.CSRFToken){
 		fetch_opt.headers.CSRFtoken = api.default.CSRFToken;
 	}
