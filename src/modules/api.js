@@ -192,32 +192,4 @@ const triggerGlobalError = err => {
 	return api.errorCallback.default(err);
 };
 
-document.addEventListener('click', function (event) {
-	const t = event.target.closest('[ced-action]');
-	if (!t) return;
-	const args = {};
-	for (let i = 0; i < t.attributes.length; i++) {
-		const att = t.attributes[i];
-		if(att.name.slice(0,8) == 'ced-args'){
-			args[att.name.slice(9)] = att.value;
-		}
-	}
-	const action = t.getAttribute('ced-action');
-	let cb = t.getAttribute('ced-callback');
-	if(cb){
-		cb = cb.split('.');
-		let context = window;
-		let lastContext = window;
-		for (let i = 0; i < cb.length; i++) {
-			lastContext = context;
-			context = context[cb[i]];
-		}
-		//rebind context to main context, prevent Uncaught TypeError: Illegal invocation
-		context = context.bind(lastContext);
-		api(action, args).then((data) => context(data));
-	}else{
-		api(action, args);
-	}
-});
-
 module.exports = api;

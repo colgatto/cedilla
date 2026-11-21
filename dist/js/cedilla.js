@@ -205,34 +205,6 @@ const triggerGlobalError = err => {
 	return api.errorCallback.default(err);
 };
 
-document.addEventListener('click', function (event) {
-	const t = event.target.closest('[ced-action]');
-	if (!t) return;
-	const args = {};
-	for (let i = 0; i < t.attributes.length; i++) {
-		const att = t.attributes[i];
-		if(att.name.slice(0,8) == 'ced-args'){
-			args[att.name.slice(9)] = att.value;
-		}
-	}
-	const action = t.getAttribute('ced-action');
-	let cb = t.getAttribute('ced-callback');
-	if(cb){
-		cb = cb.split('.');
-		let context = window;
-		let lastContext = window;
-		for (let i = 0; i < cb.length; i++) {
-			lastContext = context;
-			context = context[cb[i]];
-		}
-		//rebind context to main context, prevent Uncaught TypeError: Illegal invocation
-		context = context.bind(lastContext);
-		api(action, args).then((data) => context(data));
-	}else{
-		api(action, args);
-	}
-});
-
 module.exports = api;
 },{}],3:[function(require,module,exports){
 const arr = {};
@@ -524,31 +496,37 @@ const sleep = async n => new Promise( r => setTimeout(r, n));
 
 class Render {
 	
-	constructor(templateName) {
+	constructor(templateName, template = null) {
 		
 		if(typeof window.Handlebars == 'undefined') throw new Error('Cedilla Render require Handlebars to work');
 
 		this.templateName = templateName;
-		this.template = null;
+		this.template = template;
 		this.f = null;
+		this.templatePath = null;
 		this.loading = new Promise( r => r());
-		
+
+		if(this.template) {
+			this._compile();
+			return;
+		}
+
 		let tDom = document.getElementById(templateName);
-		
 		if(tDom){
 			this.templatePath = '#';
 			this.template = tDom.innerHTML;
 			this._compile();
-		}else{
-			this.templatePath = render.default.templates_dir + '/' + templateName + '.hbs';
-			this.loading = fetch(this.templatePath, {
-				mode: 'same-origin',
-				credentials: 'same-origin'
-			}).then( res => res.text() ).then((res) => {
-				this.template = res;
-				this._compile();
-			});
+			return;
 		}
+
+		this.templatePath = render.default.templates_dir + '/' + templateName + '.hbs';
+		this.loading = fetch(this.templatePath, {
+			mode: 'same-origin',
+			credentials: 'same-origin'
+		}).then( res => res.text() ).then((res) => {
+			this.template = res;
+			this._compile();
+		});
 	}
 
 	_compile(){
@@ -578,7 +556,12 @@ const _render_pool = {};
 const render = (templateName) => {
 	if(typeof _render_pool[templateName] == 'undefined') _render_pool[templateName] = new Render(templateName);
 	return _render_pool[templateName];
-}
+};
+
+render.load = (templateName, template) => {
+	if(typeof _render_pool[templateName] == 'undefined') _render_pool[templateName] = new Render(templateName, template);
+	return _render_pool[templateName];
+};
 
 render.default = {
 	templates_dir: 'templates',

@@ -30,9 +30,6 @@ let cells = document.querySelectorAll('.example td'); //VANILLA JS
 
 - api
 - dom
-- cookie
-- str
-- arr
 
 #### `default` key
 
@@ -42,49 +39,6 @@ A perfect example is when you must change the webook for the `api` module
 
 ```js
 ç.api.default.webhook = 'custom/path/for/my_api.php';
-```
-
-## ced attributes
-Cedilla aggiunge determinati attributi con prefisso `ced-` che facilitano le richieste api alle routes.
-
-- `ced-action` si usa per dichiarare il nome della route da triggerare 
-- `ced-args-<nome args>` viene usato per passare argomenti alla route scelta
-- `ced-callback` viene usato per indicare la funzione da richiamare una volta avvenuta la risposta
-
-**N.B.**
-
-`ced-callback` richiede solo il nome della funzione da eseguire **SENZA** le parentesi finali di esecuzione
-
-#### Esempio
-```html
-<button class="btn btn-primary" ced-action="login" ced-args-username="pippo" ced-args-password="segreto" ced-callback="document.location.reload">
-```
-
-
-### Module `arr`
-
-### `pickRandom(array)`
-
-- array `<Array>`
-- Return: `<Object>` random item from array.
-
-```js
-let list = ['apple','mela','banana'];
-let fruit = ç.arr.pickRandom(list);
-```
-
-### Module `str`
-
-### `firstUp(text[, forceLowerCase])`
-
-- text `<string>`
-- forceLowerCase `<boolean>` force the rest of the string to lower case
-- Return: `<string>` same string with first char upper case
-```js
-const first = ç.str.firstUp('heLLO WOrld!');
-const second = ç.str.firstUp('heLLO WOrld!', true);
-console.log(first);//Print:  HeLLO WOrld!
-console.log(second);//Print:  Hello world!
 ```
 ---
 
