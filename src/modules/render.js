@@ -6,7 +6,6 @@ class Render {
 
 		if(render.default.check_handlebars_template && window.Handlebars.templates && window.Handlebars.templates[templateName]){
 			this.f = window.Handlebars.templates[templateName];
-			window.console.log({f: templateName});
 			return;
 		}
 
@@ -17,12 +16,10 @@ class Render {
 
 		if(typeof templateOrF === 'function') {
 			this.f = templateOrF;
-			window.console.log({function: templateName});
 			return;
 		}
 		if(typeof templateOrF === 'string') {
 			this.template = templateOrF;
-			window.console.log({string: templateName});
 			this._compile();
 			return;
 		}
